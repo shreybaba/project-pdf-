@@ -6,202 +6,130 @@
 <title>ReadPDF</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBwiiOOEewaEplxWy4pZAy5rwMiUa6cYys",
+  authDomain: "reader-81afe.firebaseapp.com",
+  projectId: "reader-81afe",
+  storageBucket: "reader-81afe.firebasestorage.app",
+  messagingSenderId: "389496255994",
+  appId: "1:389496255994:web:a82d8642d94cf6736a2043"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+/* ══ EXPOSE TO GLOBAL ══ */
+window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp, increment };
+window._fbReady = true;
+document.dispatchEvent(new Event('fb-ready'));
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#0a0a12;--s1:#12121e;--s2:#1a1a2e;--s3:#22223a;
-  --bdr:#ffffff12;--bdr2:#ffffff20;
+  --bdr:#ffffff12;--bdr2:#ffffff22;
   --txt:#f0efff;--txt2:#8e8ca8;--txt3:#4e4c68;
   --coral:#ff4f2b;--violet:#7c3aed;--cyan:#0ea5e9;--amber:#f59e0b;--green:#10b981;
   --g1:linear-gradient(135deg,#ff4f2b,#7c3aed);
   --g2:linear-gradient(135deg,#0ea5e9,#7c3aed);
   --g3:linear-gradient(135deg,#f59e0b,#ff4f2b);
-  --sidebar-w:300px;--thumb-w:88px;--chat-w:340px;
+  --sidebar-w:300px;--chat-w:340px;
 }
 html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt);overflow:hidden}
 
-/* ═══ PAGE SYSTEM ═══ */
-.pg{position:fixed;inset:0;display:flex;transition:opacity .35s,transform .35s;will-change:transform,opacity}
-.pg.off{opacity:0;pointer-events:none;transform:translateY(12px)}
+/* ══ PAGES ══ */
+.pg{position:fixed;inset:0;display:flex;transition:opacity .35s,transform .35s}
+.pg.off{opacity:0;pointer-events:none;transform:translateY(10px)}
 
-/* ════════════════════════════
-   LOGIN PAGE
-════════════════════════════ */
+/* ══ LOGIN ══ */
 #pgLogin{align-items:stretch}
-
-.login-left{
-  flex:1;position:relative;overflow:hidden;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;
-  background:var(--bg);
-}
-/* animated gradient bg */
-.login-left::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 70% 60% at 20% 40%,#7c3aed2a,transparent),
-    radial-gradient(ellipse 50% 70% at 80% 60%,#ff4f2b1a,transparent),
-    radial-gradient(ellipse 40% 40% at 60% 20%,#0ea5e91a,transparent);
-  animation:bgShift 8s ease-in-out infinite alternate;
-}
-@keyframes bgShift{0%{opacity:.6}100%{opacity:1}}
-
-.login-logo-wrap{position:relative;z-index:2;text-align:center}
-.login-logo{
-  width:76px;height:76px;border-radius:22px;background:var(--g1);
-  display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;
-  box-shadow:0 0 0 0 #ff4f2b44;animation:logoPulse 2.5s ease-in-out infinite;
-}
-@keyframes logoPulse{0%,100%{box-shadow:0 0 30px #ff4f2b44,0 0 0 0 #7c3aed00}50%{box-shadow:0 0 60px #7c3aed66,0 0 80px #ff4f2b22}}
+.login-left{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg)}
+.login-left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 20% 40%,#7c3aed2a,transparent),radial-gradient(ellipse 50% 70% at 80% 60%,#ff4f2b1a,transparent),radial-gradient(ellipse 40% 40% at 60% 20%,#0ea5e91a,transparent)}
+.login-logo{width:76px;height:76px;border-radius:22px;background:var(--g1);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;box-shadow:0 0 40px #ff4f2b44;animation:logoPulse 2.5s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 30px #ff4f2b44}50%{box-shadow:0 0 70px #7c3aed66,0 0 100px #ff4f2b22}}
 .login-logo svg{width:34px;height:34px;color:#fff}
-.login-logo-wrap h1{
-  font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;letter-spacing:-.03em;
-  background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.login-logo-wrap p{font-size:.9rem;color:var(--txt2);margin-top:.4rem;font-weight:300}
-
-/* floating preview cards */
+.login-brand{position:relative;z-index:2;text-align:center}
+.login-brand h1{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;letter-spacing:-.03em;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.login-brand p{font-size:.9rem;color:var(--txt2);margin-top:.4rem}
 .preview-cards{position:absolute;inset:0;pointer-events:none;z-index:1}
-.pc{
-  position:absolute;background:var(--s2);border:1px solid var(--bdr2);border-radius:12px;
-  padding:.7rem .9rem;font-size:.75rem;color:var(--txt2);
-  backdrop-filter:blur(12px);
-}
-.pc:nth-child(1){top:14%;left:6%;animation:pc1 7s ease-in-out infinite}
-.pc:nth-child(2){bottom:20%;left:4%;animation:pc2 9s ease-in-out infinite}
-.pc:nth-child(3){top:30%;right:6%;animation:pc3 8s ease-in-out infinite}
-.pc:nth-child(4){bottom:15%;right:8%;animation:pc4 6s ease-in-out infinite}
-@keyframes pc1{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-10px) rotate(.5deg)}}
-@keyframes pc2{0%,100%{transform:translateY(0) rotate(.5deg)}50%{transform:translateY(-14px) rotate(-.5deg)}}
-@keyframes pc3{0%,100%{transform:translateY(0) rotate(-.3deg)}50%{transform:translateY(-8px) rotate(.3deg)}}
-@keyframes pc4{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-.pc-title{font-weight:700;color:var(--txt);font-size:.8rem;margin-bottom:.3rem;display:flex;align-items:center;gap:.4rem}
+.pc{position:absolute;background:var(--s2);border:1px solid var(--bdr2);border-radius:12px;padding:.7rem .9rem;font-size:.75rem;color:var(--txt2)}
+.pc:nth-child(1){top:14%;left:6%;animation:pca 7s ease-in-out infinite}
+.pc:nth-child(2){bottom:22%;left:4%;animation:pca 9s ease-in-out infinite .5s}
+.pc:nth-child(3){top:30%;right:6%;animation:pca 8s ease-in-out infinite 1s}
+.pc:nth-child(4){bottom:16%;right:7%;animation:pca 6s ease-in-out infinite 1.5s}
+@keyframes pca{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.pc-title{font-weight:700;color:var(--txt);font-size:.8rem;margin-bottom:.3rem}
 .pc-bar{height:3px;border-radius:99px;background:var(--s3);margin-top:.5rem;overflow:hidden}
 .pc-fill{height:100%;border-radius:99px;background:var(--g1)}
 
-/* LOGIN FORM PANEL */
-.login-right{
-  width:450px;flex-shrink:0;background:var(--s1);border-left:1px solid var(--bdr);
-  display:flex;flex-direction:column;justify-content:center;padding:2.5rem;
-  position:relative;overflow:hidden;
-}
-.login-right::after{
-  content:'';position:absolute;top:-120px;right:-120px;width:280px;height:280px;
-  border-radius:50%;background:radial-gradient(circle,#7c3aed1a,transparent 70%);pointer-events:none;
-}
-.form-head{margin-bottom:1.75rem}
-.form-head h2{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.3rem}
-.form-head p{font-size:.85rem;color:var(--txt2)}
-.form-head p span{color:var(--coral);font-weight:600;cursor:pointer}
-
-.field{margin-bottom:1rem}
-.field label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin-bottom:.4rem}
-.field input{
-  width:100%;padding:.8rem 1rem;background:var(--s2);border:1.5px solid var(--bdr);
-  border-radius:10px;color:var(--txt);font-size:.9rem;font-family:'Plus Jakarta Sans',sans-serif;
-  outline:none;transition:border-color .2s,box-shadow .2s;
-}
-.field input:focus{border-color:#7c3aed99;box-shadow:0 0 0 3px #7c3aed1a}
-.field input.err{border-color:#ff4f2b99;box-shadow:0 0 0 3px #ff4f2b1a;animation:shake .3s ease}
+.login-right{width:450px;flex-shrink:0;background:var(--s1);border-left:1px solid var(--bdr);display:flex;flex-direction:column;justify-content:center;padding:2.5rem;position:relative;overflow:hidden}
+.login-right::after{content:'';position:absolute;top:-120px;right:-120px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,#7c3aed18,transparent 70%);pointer-events:none}
+.fh h2{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.3rem}
+.fh p{font-size:.85rem;color:var(--txt2);margin-bottom:1.5rem}
+.fh p span{color:var(--coral);font-weight:600;cursor:pointer}
+.field{margin-bottom:.9rem}
+.field label{display:block;font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin-bottom:.35rem}
+.field input{width:100%;padding:.8rem 1rem;background:var(--s2);border:1.5px solid var(--bdr);border-radius:10px;color:var(--txt);font-size:.9rem;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus{border-color:#7c3aed99;box-shadow:0 0 0 3px #7c3aed18}
+.field input.err{border-color:#ff4f2baa;animation:shake .3s ease}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .field input::placeholder{color:var(--txt3)}
-
-.field-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
-.check-label{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--txt2);cursor:pointer}
-.check-label input{accent-color:var(--violet);width:14px;height:14px}
-.link-sm{font-size:.8rem;color:var(--violet);font-weight:600;text-decoration:none;cursor:pointer}
+.frow{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem}
+.check-lbl{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--txt2);cursor:pointer}
+.check-lbl input{accent-color:var(--violet)}
+.link-sm{font-size:.8rem;color:var(--violet);font-weight:600;cursor:pointer}
 .link-sm:hover{text-decoration:underline}
-
-.err-msg{font-size:.78rem;color:#ff6b4a;margin-bottom:.75rem;display:none;padding:.5rem .75rem;background:#ff4f2b14;border-radius:7px;border:1px solid #ff4f2b33}
-.err-msg.show{display:block;animation:fadeIn .2s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-
-.btn-main{
-  width:100%;padding:.875rem;border:none;border-radius:10px;cursor:pointer;
-  background:var(--g1);color:#fff;font-size:.95rem;font-weight:700;
-  font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:.01em;
-  transition:transform .15s,box-shadow .15s,opacity .15s;
-  box-shadow:0 4px 20px #ff4f2b44;
-}
+.form-err{display:none;font-size:.78rem;color:#ff6b4a;margin-bottom:.7rem;padding:.5rem .75rem;background:#ff4f2b14;border-radius:7px;border:1px solid #ff4f2b33}
+.form-err.show{display:block;animation:fadein .2s ease}
+.btn-main{width:100%;padding:.875rem;border:none;border-radius:10px;cursor:pointer;background:var(--g1);color:#fff;font-size:.95rem;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;transition:transform .15s,box-shadow .15s,opacity .15s;box-shadow:0 4px 20px #ff4f2b44}
 .btn-main:hover{transform:translateY(-1px);box-shadow:0 8px 28px #ff4f2b55}
-.btn-main:active{transform:translateY(0);opacity:.9}
-
-.divider{display:flex;align-items:center;gap:.6rem;margin:1.1rem 0;color:var(--txt3);font-size:.75rem}
+.btn-main:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.divider{display:flex;align-items:center;gap:.6rem;margin:1rem 0;color:var(--txt3);font-size:.75rem}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.btn-google{width:100%;padding:.8rem;background:var(--s2);border:1.5px solid var(--bdr2);border-radius:10px;color:var(--txt);font-size:.88rem;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.65rem;transition:background .15s}
+.btn-google:hover{background:var(--s3)}
+.sw-row{text-align:center;font-size:.82rem;color:var(--txt2);margin-top:1rem}
+.sw-row a{color:var(--violet);font-weight:700;cursor:pointer}
+.sw-row a:hover{text-decoration:underline}
 
-.btn-google{
-  width:100%;padding:.8rem;background:var(--s2);border:1.5px solid var(--bdr2);border-radius:10px;
-  color:var(--txt);font-size:.88rem;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.65rem;
-  transition:background .15s,border-color .15s;
-}
-.btn-google:hover{background:var(--s3);border-color:#ffffff30}
-
-.switch-row{text-align:center;font-size:.82rem;color:var(--txt2);margin-top:1.1rem}
-.switch-row a{color:var(--violet);font-weight:700;text-decoration:none;cursor:pointer}
-.switch-row a:hover{text-decoration:underline}
-
-/* ════════════════════════════
-   DASHBOARD
-════════════════════════════ */
+/* ══ DASHBOARD ══ */
 #pgDash{flex-direction:column}
-
-.dash-nav{
-  height:58px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 1.25rem;
-  background:var(--s1);border-bottom:1px solid var(--bdr);
-}
+.dnav{height:58px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 1.25rem;background:var(--s1);border-bottom:1px solid var(--bdr)}
 .d-logo{width:32px;height:32px;border-radius:8px;background:var(--g1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .d-logo svg{width:15px;height:15px;color:#fff}
-.d-brand{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;
-  background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.d-brand{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .d-search{flex:1;max-width:300px;position:relative;margin-left:.5rem}
 .d-search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--txt3);pointer-events:none}
 .d-search input{width:100%;padding:6px 10px 6px 30px;background:var(--s2);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);font-size:.8rem;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color .2s}
 .d-search input:focus{border-color:#7c3aed66}
 .d-search input::placeholder{color:var(--txt3)}
 .d-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-
-.streak-pill{
-  display:flex;align-items:center;gap:5px;padding:5px 11px;
-  background:var(--s2);border:1px solid var(--bdr2);border-radius:99px;
-  font-size:.8rem;font-weight:600;cursor:default;
-}
+.streak-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;background:var(--s2);border:1px solid var(--bdr2);border-radius:99px;font-size:.8rem;font-weight:600}
 .streak-pill .se{font-size:1rem}
 .streak-pill .sn{color:var(--amber)}
-
-.d-upload-btn{
-  display:flex;align-items:center;gap:5px;padding:6px 13px;
-  background:var(--g1);border:none;border-radius:7px;
-  color:#fff;font-size:.8rem;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;
-  cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 10px #ff4f2b33;
-}
+.d-upload-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;background:var(--g1);border:none;border-radius:7px;color:#fff;font-size:.8rem;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 10px #ff4f2b33}
 .d-upload-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px #ff4f2b55}
 .d-upload-btn svg{width:12px;height:12px}
-
-.d-avatar{
-  width:32px;height:32px;border-radius:50%;background:var(--g2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;font-weight:800;cursor:pointer;flex-shrink:0;letter-spacing:.05em;
-}
+.d-avatar{width:32px;height:32px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;cursor:pointer;flex-shrink:0}
 .signout-btn{background:none;border:1px solid var(--bdr);border-radius:7px;padding:5px 10px;cursor:pointer;color:var(--txt2);font-size:.75rem;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s}
 .signout-btn:hover{background:var(--s2);color:var(--txt)}
 
-/* DASH BODY */
 .dash-body{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:1.1rem}
 .dash-body::-webkit-scrollbar{width:4px}
 .dash-body::-webkit-scrollbar-thumb{background:#ffffff14;border-radius:99px}
-
-/* greeting */
 .greeting h2{font-family:'Syne',sans-serif;font-size:1.55rem;font-weight:800;letter-spacing:-.02em}
 .greeting h2 em{font-style:normal;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .greeting p{font-size:.82rem;color:var(--txt2);margin-top:.2rem}
 
-/* stats */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem}
-.sc{
-  background:var(--s1);border:1px solid var(--bdr);border-radius:13px;
-  padding:.9rem 1rem;position:relative;overflow:hidden;cursor:default;
-  transition:transform .2s,border-color .2s;
-}
+.sc{background:var(--s1);border:1px solid var(--bdr);border-radius:13px;padding:.9rem 1rem;position:relative;overflow:hidden;cursor:default;transition:transform .2s,border-color .2s}
 .sc:hover{transform:translateY(-2px);border-color:var(--bdr2)}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
 .sc:nth-child(1)::before{background:var(--g1)}
@@ -213,76 +141,42 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .sc-val{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;line-height:1}
 .sc-lbl{font-size:.72rem;color:var(--txt2);margin-top:.2rem}
 
-/* main grid */
 .main-grid{display:grid;grid-template-columns:1fr 320px;gap:1.1rem;flex:1;min-height:0}
-
-/* current book card */
-.cur-book{
-  background:var(--s1);border:1px solid var(--bdr);border-radius:16px;
-  padding:1.1rem;display:flex;flex-direction:column;gap:.9rem;overflow:hidden;
-}
-.sec-lbl{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--txt3);margin-bottom:.1rem}
-
+.cur-book{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:1.1rem;display:flex;flex-direction:column;gap:.9rem;overflow:hidden}
+.sec-lbl{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--txt3)}
 .book-row{display:flex;gap:.9rem;align-items:flex-start}
-.b-cover{
-  width:68px;height:92px;border-radius:8px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;font-size:1.75rem;
-  box-shadow:0 8px 24px #00000066;position:relative;overflow:hidden;
-}
+.b-cover{width:68px;height:92px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.75rem;box-shadow:0 8px 24px #00000066;position:relative;overflow:hidden}
 .b-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(160deg,#ffffff22,transparent 60%)}
 .b-info{flex:1;min-width:0}
 .b-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;line-height:1.25;margin-bottom:.2rem}
 .b-author{font-size:.78rem;color:var(--txt2);margin-bottom:.55rem}
-.b-ch-tag{
-  display:inline-flex;align-items:center;gap:.35rem;
-  background:var(--s2);border:1px solid var(--bdr);border-radius:6px;
-  padding:.3rem .6rem;font-size:.73rem;
-}
+.b-ch-tag{display:inline-flex;align-items:center;gap:.35rem;background:var(--s2);border:1px solid var(--bdr);border-radius:6px;padding:.3rem .6rem;font-size:.73rem}
 .b-ch-tag svg{width:10px;height:10px;color:var(--violet)}
 .b-ch-tag strong{color:var(--txt);font-weight:600}
 .b-ch-tag span{color:var(--txt2)}
-
 .prog-row{display:flex;justify-content:space-between;margin-bottom:.4rem}
 .prog-lbl{font-size:.75rem;color:var(--txt2)}
 .prog-pct{font-size:.75rem;font-weight:700;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .prog-track{height:7px;background:var(--s2);border-radius:99px;overflow:hidden}
 .prog-fill{height:100%;border-radius:99px;background:var(--g1);position:relative;transition:width .8s cubic-bezier(.34,1.56,.64,1)}
-.prog-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,#ffffff30 50%,transparent 100%);animation:shim 2s infinite}
+.prog-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,#ffffff30,transparent);animation:shim 2s infinite}
 @keyframes shim{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-
-.ch-list-mini{display:flex;flex-direction:column;gap:.28rem;max-height:155px;overflow-y:auto}
-.ch-list-mini::-webkit-scrollbar{width:2px}
-.ch-list-mini::-webkit-scrollbar-thumb{background:#ffffff14;border-radius:99px}
-.ch-mi{display:flex;align-items:center;gap:.55rem;padding:.38rem .55rem;border-radius:7px;cursor:pointer;transition:background .12s;font-size:.77rem}
-.ch-mi:hover{background:var(--s2)}
+.ch-mini{display:flex;flex-direction:column;gap:.28rem;max-height:150px;overflow-y:auto}
+.ch-mini::-webkit-scrollbar{width:2px}
+.ch-mi{display:flex;align-items:center;gap:.55rem;padding:.35rem .55rem;border-radius:7px;cursor:default;font-size:.77rem}
 .ch-mi.cur{background:#7c3aed18;border:1px solid #7c3aed2a}
-.ch-mi .cn{font-size:.68rem;color:var(--txt3);min-width:18px;flex-shrink:0}
+.ch-mi .cn{font-size:.68rem;color:var(--txt3);min-width:18px}
 .ch-mi .ct{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt2)}
 .ch-mi.cur .ct{color:var(--txt);font-weight:600}
 .ch-mi .cd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.cd-done{background:#7c3aed}
-.cd-cur{background:var(--coral);box-shadow:0 0 6px #ff4f2b88}
-.cd-todo{background:var(--s3)}
-
-.btn-continue{
-  display:flex;align-items:center;justify-content:center;gap:.5rem;
-  padding:.7rem;background:var(--g1);border:none;border-radius:10px;
-  color:#fff;font-size:.85rem;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;
-  cursor:pointer;box-shadow:0 4px 16px #ff4f2b33;transition:transform .15s,box-shadow .15s;
-}
+.btn-continue{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem;background:var(--g1);border:none;border-radius:10px;color:#fff;font-size:.85rem;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;box-shadow:0 4px 16px #ff4f2b33;transition:transform .15s,box-shadow .15s}
 .btn-continue:hover{transform:translateY(-1px);box-shadow:0 6px 22px #ff4f2b55}
 .btn-continue svg{width:14px;height:14px}
 
-/* right panel */
 .r-panel{display:flex;flex-direction:column;gap:1.1rem}
-
-/* streak card */
-.streak-card{
-  background:var(--s1);border:1px solid var(--bdr);border-radius:16px;
-  padding:1rem;text-align:center;position:relative;overflow:hidden;
-}
+.streak-card{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:1rem;text-align:center;position:relative;overflow:hidden}
 .streak-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -20%,#f59e0b14,transparent 60%);pointer-events:none}
-.str-emoji{font-size:2.6rem;display:block;margin-bottom:.1rem;transition:filter .4s,transform .3s}
+.str-emoji{font-size:2.6rem;display:block;margin-bottom:.1rem;transition:filter .4s}
 .str-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--amber);line-height:1}
 .str-sub{font-size:.73rem;color:var(--txt2);margin-top:.15rem}
 .str-days{display:flex;gap:.3rem;justify-content:center;margin-top:.7rem}
@@ -290,12 +184,9 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .sd.done{background:#f59e0b1a;color:var(--amber);border:1px solid #f59e0b44}
 .sd.today{background:var(--g3);color:#fff;box-shadow:0 2px 8px #f59e0b55}
 .sd.miss{background:var(--s2);color:var(--txt3)}
-
-/* recent */
 .rec-card{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:1rem;flex:1;display:flex;flex-direction:column;gap:.5rem;overflow:hidden}
 .rec-list{display:flex;flex-direction:column;gap:.4rem;overflow-y:auto;flex:1}
 .rec-list::-webkit-scrollbar{width:2px}
-.rec-list::-webkit-scrollbar-thumb{background:#ffffff14;border-radius:99px}
 .rec-item{display:flex;align-items:center;gap:.65rem;padding:.45rem .55rem;border-radius:8px;cursor:pointer;transition:background .12s}
 .rec-item:hover{background:var(--s2)}
 .ri-cov{width:32px;height:44px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.95rem}
@@ -304,32 +195,25 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .ri-meta{font-size:.68rem;color:var(--txt3);margin-top:1px}
 .ri-bar{height:2px;border-radius:99px;background:var(--s2);overflow:hidden;margin-top:.3rem}
 .ri-fill{height:100%;border-radius:99px;background:var(--g1)}
+.empty-state{padding:1.5rem;text-align:center;color:var(--txt3);font-size:.8rem;line-height:1.7}
 
-/* ════════════════════════════
-   PDF READER
-════════════════════════════ */
+/* ══ PDF READER ══ */
 #pgReader{flex-direction:column}
-.reader-nav{
-  height:50px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 1rem;
-  background:var(--s1);border-bottom:1px solid var(--bdr);z-index:20;
-}
+.rnav{height:50px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 1rem;background:var(--s1);border-bottom:1px solid var(--bdr);z-index:20}
 .back-btn{display:flex;align-items:center;gap:5px;background:none;border:1px solid var(--bdr);border-radius:7px;padding:5px 10px;cursor:pointer;color:var(--txt2);font-size:.78rem;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s}
 .back-btn:hover{background:var(--s2);color:var(--txt)}
 .back-btn svg{width:13px;height:13px}
 .r-file{font-size:.8rem;color:var(--txt3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px}
-.r-badge{font-size:.7rem;font-weight:600;background:#7c3aed1a;color:var(--violet);padding:3px 8px;border-radius:99px;border:1px solid #7c3aed44;white-space:nowrap}
-.zoom-ctl{display:flex;align-items:center;gap:3px}
+.r-badge{font-size:.7rem;font-weight:600;background:#7c3aed1a;color:#a78bfa;padding:3px 8px;border-radius:99px;border:1px solid #7c3aed44;white-space:nowrap;display:none}
+.zoom-ctl{display:flex;align-items:center;gap:3px;display:none}
 .zoom-ctl button{background:none;border:1px solid var(--bdr);border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--txt2);transition:all .15s}
 .zoom-ctl button:hover{background:var(--s2);color:var(--txt)}
 .zoom-ctl button svg{width:12px;height:12px;display:block}
 .zoom-val{font-size:.78rem;color:var(--txt2);min-width:34px;text-align:center}
-
-.r-progress{height:2px;background:var(--bdr);flex-shrink:0}
+.r-prog{height:2px;background:var(--bdr);flex-shrink:0}
 .r-pfill{height:100%;width:0%;background:var(--g1);transition:width .2s}
-
 .r-main{display:flex;flex:1;overflow:hidden}
 
-/* thumb strip */
 .thumb-strip{width:86px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bdr);overflow-y:auto;padding:8px 5px;display:flex;flex-direction:column;gap:6px}
 .thumb-strip::-webkit-scrollbar{width:2px}
 .thumb-strip::-webkit-scrollbar-thumb{background:#ffffff10;border-radius:99px}
@@ -340,7 +224,6 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .th-item canvas{display:block;width:100%;height:auto}
 .th-num{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:8px;color:#bbb;background:rgba(0,0,0,.5);padding:1px 0}
 
-/* pdf viewer */
 .pdf-viewer{flex:1;overflow-y:auto;background:#3a3a4a;position:relative}
 .pdf-viewer::-webkit-scrollbar{width:5px}
 .pdf-viewer::-webkit-scrollbar-thumb{background:#ffffff22;border-radius:99px}
@@ -348,8 +231,6 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .pg-wrap{position:relative;box-shadow:0 2px 20px rgba(0,0,0,.4);border-radius:3px;overflow:hidden;background:#fff;flex-shrink:0}
 .pg-wrap canvas{display:block}
 .pg-lbl{position:absolute;bottom:6px;right:8px;font-size:9px;color:#999;pointer-events:none}
-
-/* upload overlay */
 .upload-ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#3a3a4a;z-index:5;padding:2rem}
 .upload-ov.off{display:none}
 .dz{width:100%;max-width:360px;border:2px dashed #7c3aed66;border-radius:16px;padding:2.5rem 2rem;cursor:pointer;transition:background .15s,border-color .15s;background:#1a1a2e;text-align:center}
@@ -357,7 +238,6 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .dz h3{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;margin-bottom:.3rem}
 .dz p{font-size:.8rem;color:var(--txt2);line-height:1.6}
 .dz input{display:none}
-
 .load-ov{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;background:#3a3a4a;z-index:6;color:var(--txt2);font-size:.85rem}
 .load-ov.on{display:flex}
 .spinner{width:26px;height:26px;border:2px solid #ffffff22;border-top-color:var(--coral);border-radius:50%;animation:spin .65s linear infinite}
@@ -365,27 +245,23 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .load-sub{font-size:.72rem;color:var(--txt3)}
 .mini-spin{width:11px;height:11px;border:1.5px solid #ffffff22;border-top-color:var(--coral);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
 
-/* chapter sidebar */
 .ch-sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--s1);border-left:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
 .csh-head{padding:.8rem .9rem .65rem;border-bottom:1px solid var(--bdr);flex-shrink:0}
 .csh-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
 .csh-row h3{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3)}
 .ch-cnt{font-size:.7rem;color:var(--txt3);background:var(--s2);padding:2px 7px;border-radius:99px}
-.src-tag{font-size:.65rem;padding:2px 6px;border-radius:99px;font-weight:600;margin-left:4px}
+.src-tag{font-size:.65rem;padding:2px 6px;border-radius:99px;font-weight:600;margin-left:4px;display:none}
 .src-outline{background:#10b9811a;color:var(--green);border:1px solid #10b98133}
 .src-ai{background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33}
 .src-scan{background:var(--s2);color:var(--txt3);border:1px solid var(--bdr)}
-
 .csh-search{position:relative}
 .csh-search svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:11px;height:11px;color:var(--txt3);pointer-events:none}
 .csh-search input{width:100%;padding:5px 9px 5px 25px;font-size:.78rem;font-family:'Plus Jakarta Sans',sans-serif;background:var(--s2);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);outline:none;transition:border-color .15s}
 .csh-search input:focus{border-color:#7c3aed66}
 .csh-search input::placeholder{color:var(--txt3)}
-
 .ch-scroll{flex:1;overflow-y:auto;padding:.3rem 0}
 .ch-scroll::-webkit-scrollbar{width:2px}
 .ch-scroll::-webkit-scrollbar-thumb{background:#ffffff10;border-radius:99px}
-
 .ch-item{display:flex;align-items:flex-start;gap:8px;padding:.45rem .9rem;cursor:pointer;transition:background .12s;border-left:2.5px solid transparent}
 .ch-item:hover{background:var(--s2)}
 .ch-item:hover .syn-btn{opacity:1}
@@ -398,35 +274,28 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .ci-sub{margin-top:2px}
 .ci-sub-item{font-size:.7rem;color:var(--txt2);padding:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:flex;align-items:center;gap:3px}
 .ci-sub-item:hover{color:var(--violet)}
-
 .syn-btn{opacity:0;transition:opacity .15s;background:#7c3aed1a;border:1px solid #7c3aed44;color:#a78bfa;font-size:.68rem;font-family:'Plus Jakarta Sans',sans-serif;padding:2px 6px;border-radius:99px;cursor:pointer;white-space:nowrap;margin-top:3px;display:inline-flex;align-items:center;gap:2px}
 .syn-btn:hover{background:var(--violet);color:#fff}
 .syn-btn.loading{opacity:1;pointer-events:none}
-
 .syn-card{margin:.25rem .9rem .5rem 2.5rem;background:var(--s2);border:1px solid var(--bdr);border-radius:7px;padding:.55rem .65rem;font-size:.73rem;line-height:1.6;display:none}
-.syn-card.show{display:block;animation:fadeIn .2s ease}
+.syn-card.show{display:block;animation:fadein .2s ease}
 .syn-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem}
 .syn-lbl{font-size:.62rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--violet)}
 .syn-x{background:none;border:none;cursor:pointer;color:var(--txt3);font-size:13px;line-height:1;padding:0}
 .syn-x:hover{color:var(--txt)}
 .syn-txt{color:var(--txt2)}
 .syn-spin{display:flex;align-items:center;gap:5px;color:var(--txt3);font-size:.72rem}
-
 .no-ch{padding:1.5rem .9rem;text-align:center;color:var(--txt3);font-size:.78rem;line-height:1.65}
-
 .csh-foot{padding:.6rem .9rem;border-top:1px solid var(--bdr);flex-shrink:0}
 .csh-stat{display:flex;justify-content:space-between;margin-bottom:.25rem}
 .csh-sl{font-size:.68rem;color:var(--txt3)}
 .csh-sv{font-size:.68rem;font-weight:600;color:var(--txt)}
 .csh-bar{height:3px;background:var(--s2);border-radius:99px;overflow:hidden;margin-top:.3rem}
-.csh-bf{height:100%;background:var(--g1);border-radius:99px;transition:width .4s ease}
+.csh-bf{height:100%;background:var(--g1);border-radius:99px;transition:width .4s}
 
-/* chat fab */
 .chat-fab{position:fixed;bottom:1.4rem;right:calc(var(--sidebar-w) + 1.1rem);width:44px;height:44px;border-radius:50%;background:var(--g1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px #ff4f2b44;z-index:100;transition:transform .15s,box-shadow .15s}
 .chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 22px #ff4f2b66}
 .chat-fab svg{width:17px;height:17px;color:#fff}
-
-/* chat panel */
 .chat-pnl{position:fixed;bottom:0;right:var(--sidebar-w);width:var(--chat-w);height:440px;background:var(--s1);border:1px solid var(--bdr);border-bottom:none;border-radius:14px 14px 0 0;display:flex;flex-direction:column;z-index:99;transform:translateY(100%);transition:transform .25s cubic-bezier(.32,.72,0,1);box-shadow:0 -4px 28px rgba(0,0,0,.3)}
 .chat-pnl.open{transform:translateY(0)}
 .chat-hd{display:flex;align-items:center;gap:8px;padding:.7rem .9rem;border-bottom:1px solid var(--bdr);flex-shrink:0}
@@ -441,7 +310,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .chat-msgs{flex:1;overflow-y:auto;padding:.6rem;display:flex;flex-direction:column;gap:.5rem}
 .chat-msgs::-webkit-scrollbar{width:2px}
 .chat-msgs::-webkit-scrollbar-thumb{background:#ffffff10;border-radius:99px}
-.msg{max-width:88%;display:flex;flex-direction:column;gap:2px;animation:fadeIn .18s ease}
+.msg{max-width:88%;display:flex;flex-direction:column;gap:2px;animation:fadein .18s ease}
 .msg.u{align-self:flex-end}
 .msg.a{align-self:flex-start}
 .msg-b{padding:.5rem .75rem;border-radius:11px;font-size:.78rem;line-height:1.55}
@@ -466,7 +335,7 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .td:nth-child(3){animation-delay:.4s}
 @keyframes td{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
 
-/* api modal */
+/* ══ API MODAL ══ */
 .api-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
 .api-ov.off{display:none}
 .api-modal{background:var(--s1);border:1px solid var(--bdr2);border-radius:16px;padding:1.6rem;width:100%;max-width:410px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
@@ -474,8 +343,8 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .api-modal p{font-size:.8rem;color:var(--txt2);margin-bottom:.9rem;line-height:1.65}
 .api-steps{background:var(--s2);border-radius:8px;padding:.75rem .9rem;font-size:.78rem;color:var(--txt2);line-height:1.85;margin-bottom:.9rem}
 .api-steps strong{color:var(--txt);font-weight:600}
-.api-err{display:none;font-size:.75rem;color:#ff6b4a;margin-bottom:.5rem;padding:.45rem .65rem;background:#ff4f2b14;border-radius:7px;border:1px solid #ff4f2b33}
-.api-err.show{display:block;animation:fadeIn .2s ease}
+.api-err{display:none;font-size:.75rem;color:#ff6b4a;margin-bottom:.5rem;padding:.45rem .65rem;background:#ff4f2b14;border-radius:7px}
+.api-err.show{display:block}
 .api-inp{width:100%;padding:.75rem .9rem;font-size:.82rem;font-family:'Plus Jakarta Sans',sans-serif;background:var(--s2);border:1.5px solid var(--bdr);border-radius:8px;color:var(--txt);outline:none;margin-bottom:.65rem;transition:border-color .2s}
 .api-inp:focus{border-color:#7c3aed99}
 .api-inp::placeholder{color:var(--txt3)}
@@ -486,10 +355,13 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .api-skip:hover{background:var(--s2)}
 .api-note{font-size:.68rem;color:var(--txt3);margin-top:.65rem;display:flex;justify-content:space-between;align-items:center}
 .api-note button{background:none;border:none;cursor:pointer;color:var(--txt3);font-size:.68rem;text-decoration:underline;padding:0}
-.api-note button:hover{color:var(--txt2)}
 
-/* util */
-.fu{animation:fadeIn .4s ease both}
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s2);border:1px solid var(--bdr2);color:var(--txt);font-size:.8rem;padding:.6rem 1.1rem;border-radius:8px;opacity:0;transition:opacity .2s,transform .2s;z-index:500;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.fu{animation:fadein .4s ease both}
 .fu:nth-child(1){animation-delay:.05s}
 .fu:nth-child(2){animation-delay:.1s}
 .fu:nth-child(3){animation-delay:.15s}
@@ -498,46 +370,26 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 </head>
 <body>
 
-<!-- ══════════ LOGIN ══════════ -->
+<!-- ══ LOGIN ══ -->
 <div class="pg" id="pgLogin">
   <div class="login-left">
-    <!-- preview cards -->
     <div class="preview-cards">
-      <div class="pc">
-        <div class="pc-title">📖 Psychology of Money</div>
-        <div style="color:var(--txt3);font-size:.68rem">Morgan Housel · 68% done</div>
-        <div class="pc-bar"><div class="pc-fill" style="width:68%"></div></div>
-      </div>
-      <div class="pc">
-        <div class="pc-title">🔥 <span style="color:var(--amber)">7-day streak!</span></div>
-        <div style="color:var(--txt3);font-size:.68rem">Read every day this week</div>
-      </div>
-      <div class="pc">
-        <div class="pc-title">✦ AI Synopsis</div>
-        <div style="color:var(--txt3);font-size:.68rem">Chapter 8 · Man in the Car Paradox</div>
-        <div style="color:var(--txt2);font-size:.7rem;margin-top:.3rem;line-height:1.5">This chapter examines why people equate wealth with visible possessions...</div>
-      </div>
-      <div class="pc">
-        <div class="pc-title">📚 12 books read</div>
-        <div style="color:var(--txt3);font-size:.68rem">2,847 pages total this year</div>
-      </div>
+      <div class="pc"><div class="pc-title">📖 Psychology of Money</div><div style="color:var(--txt3);font-size:.68rem">68% done</div><div class="pc-bar"><div class="pc-fill" style="width:68%"></div></div></div>
+      <div class="pc"><div class="pc-title">🔥 <span style="color:var(--amber)">7-day streak!</span></div><div style="color:var(--txt3);font-size:.68rem">Keep reading daily</div></div>
+      <div class="pc"><div class="pc-title">✦ AI Synopsis ready</div><div style="color:var(--txt3);font-size:.68rem">Chapter 8 · Man in the Car Paradox</div></div>
+      <div class="pc"><div class="pc-title">📚 12 books read</div><div style="color:var(--txt3);font-size:.68rem">2,847 pages this year</div></div>
     </div>
-
-    <div class="login-logo-wrap" style="z-index:2;position:relative">
-      <div class="login-logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      </div>
+    <div class="login-brand" style="z-index:2;position:relative">
+      <div class="login-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
       <h1>ReadPDF</h1>
       <p>Your AI-powered reading companion</p>
     </div>
   </div>
-
   <div class="login-right">
-    <div class="form-head">
+    <div class="fh">
       <h2 id="formTitle">Welcome back 👋</h2>
       <p id="formSub">New here? <span onclick="toggleForm()">Create account →</span></p>
     </div>
-
     <div id="nameField" class="field" style="display:none">
       <label>Your name</label>
       <input type="text" id="inpName" placeholder="What should we call you?"/>
@@ -548,189 +400,101 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
     </div>
     <div class="field">
       <label>Password</label>
-      <input type="password" id="inpPass" placeholder="••••••••"/>
+      <input type="password" id="inpPass" placeholder="Min. 6 characters"/>
     </div>
-
-    <div class="field-row">
-      <label class="check-label"><input type="checkbox" checked/> Remember me</label>
+    <div class="frow">
+      <label class="check-lbl"><input type="checkbox" checked/> Remember me</label>
       <span class="link-sm">Forgot password?</span>
     </div>
-
-    <div class="err-msg" id="loginErr"></div>
+    <div class="form-err" id="formErr"></div>
     <button class="btn-main" id="btnSubmit" onclick="handleAuth()">Sign in to ReadPDF</button>
-
     <div class="divider">or</div>
-
     <button class="btn-google" onclick="handleAuth()">
       <svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Continue with Google
     </button>
-
-    <p class="switch-row" id="switchRow">Don't have an account? <a onclick="toggleForm()">Sign up free</a></p>
+    <p class="sw-row" id="swRow">Don't have an account? <a onclick="toggleForm()">Sign up free</a></p>
   </div>
 </div>
 
-<!-- ══════════ DASHBOARD ══════════ -->
+<!-- ══ DASHBOARD ══ -->
 <div class="pg off" id="pgDash">
-  <div class="dash-nav">
+  <div class="dnav">
     <div class="d-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
     <span class="d-brand">ReadPDF</span>
-    <div class="d-search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Search your library…"/>
-    </div>
+    <div class="d-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search your library…"/></div>
     <div class="d-right">
-      <div class="streak-pill">
-        <span class="se" id="navStreakEmoji">🔥</span>
-        <span class="sn" id="navStreakNum">7</span>
-        <span style="font-size:.7rem;color:var(--txt2)">day streak</span>
-      </div>
-      <button class="d-upload-btn" onclick="goReader()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Open PDF
-      </button>
+      <div class="streak-pill"><span class="se" id="navStreakEmoji">🔥</span><span class="sn" id="navStreakNum">0</span><span style="font-size:.7rem;color:var(--txt2)">day streak</span></div>
+      <button class="d-upload-btn" onclick="goReader()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Open PDF</button>
       <div class="d-avatar" id="dashAvatar">?</div>
-      <button class="signout-btn" onclick="goLogin()">Sign out</button>
+      <button class="signout-btn" onclick="doSignOut()">Sign out</button>
     </div>
   </div>
-
   <div class="dash-body">
-    <div class="greeting fu">
-      <h2 id="greetTxt">Good morning, <em id="greetName">there</em> ☀️</h2>
-      <p id="greetSub2">Loading your reading stats…</p>
-    </div>
-
+    <div class="greeting fu"><h2 id="greetTxt">Loading… <em id="greetName"></em></h2><p id="greetSub">Fetching your reading data…</p></div>
     <div class="stats-grid">
-      <div class="sc fu">
-        <div class="sc-icon" style="background:#ff4f2b1a"><svg viewBox="0 0 24 24" fill="none" stroke="#ff4f2b" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-        <div class="sc-val">12</div><div class="sc-lbl">Books read</div>
-      </div>
-      <div class="sc fu">
-        <div class="sc-icon" style="background:#0ea5e91a"><svg viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-        <div class="sc-val">2,847</div><div class="sc-lbl">Pages read</div>
-      </div>
-      <div class="sc fu">
-        <div class="sc-icon" style="background:#f59e0b1a"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-        <div class="sc-val">38</div><div class="sc-lbl">AI synopses</div>
-      </div>
-      <div class="sc fu">
-        <div class="sc-icon" style="background:#10b9811a"><svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <div class="sc-val">47h</div><div class="sc-lbl">Reading time</div>
-      </div>
+      <div class="sc fu"><div class="sc-icon" style="background:#ff4f2b1a"><svg viewBox="0 0 24 24" fill="none" stroke="#ff4f2b" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><div class="sc-val" id="statBooks">0</div><div class="sc-lbl">Books opened</div></div>
+      <div class="sc fu"><div class="sc-icon" style="background:#0ea5e91a"><svg viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="sc-val" id="statPages">0</div><div class="sc-lbl">Pages read</div></div>
+      <div class="sc fu"><div class="sc-icon" style="background:#f59e0b1a"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="sc-val" id="statSynopses">0</div><div class="sc-lbl">AI synopses used</div></div>
+      <div class="sc fu"><div class="sc-icon" style="background:#10b9811a"><svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="sc-val" id="statStreak">0</div><div class="sc-lbl">Day streak</div></div>
     </div>
-
     <div class="main-grid">
-      <!-- CURRENT BOOK -->
-      <div class="cur-book fu">
+      <div class="cur-book fu" id="curBookCard">
         <div class="sec-lbl">Currently reading</div>
-        <div class="book-row">
-          <div class="b-cover" style="background:var(--g1)">💰</div>
-          <div class="b-info">
-            <div class="b-title">The Psychology of Money</div>
-            <div class="b-author">Morgan Housel · 256 pages</div>
-            <div class="b-ch-tag">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-              <strong>Chapter 8:</strong> <span>Man in the Car Paradox · p.99</span>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="prog-row"><span class="prog-lbl">Reading progress</span><span class="prog-pct">68%</span></div>
-          <div class="prog-track"><div class="prog-fill" style="width:68%"></div></div>
-        </div>
-        <div>
-          <div class="sec-lbl" style="margin-bottom:.4rem">Chapters</div>
-          <div class="ch-list-mini" id="dashChMini"></div>
-        </div>
-        <button class="btn-continue" onclick="goReader()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Continue Reading
-        </button>
+        <div id="curBookContent" class="empty-state">No book open yet.<br/>Click "Open PDF" to start reading!</div>
       </div>
-
       <div class="r-panel">
-        <!-- STREAK -->
         <div class="streak-card fu">
           <div class="sec-lbl">Reading streak</div>
           <span class="str-emoji" id="strEmoji">🔥</span>
-          <div class="str-num" id="strNum">7</div>
-          <div class="str-sub" id="strSub">days in a row · Keep going!</div>
+          <div class="str-num" id="strNum">0</div>
+          <div class="str-sub" id="strSub">Start reading to build your streak!</div>
           <div class="str-days" id="strDays"></div>
         </div>
-
-        <!-- RECENT -->
         <div class="rec-card fu">
           <div class="sec-lbl">Recent books</div>
-          <div class="rec-list" id="recList"></div>
+          <div class="rec-list" id="recList"><div class="empty-state">No books yet.<br/>Open a PDF to get started!</div></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════ PDF READER ══════════ -->
+<!-- ══ PDF READER ══ -->
 <div class="pg off" id="pgReader">
-  <div class="reader-nav">
-    <button class="back-btn" onclick="goDash()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-      Dashboard
-    </button>
-    <span class="r-file" id="rFileName">No file loaded — drop a PDF below</span>
-    <span class="r-badge" id="rBadge" style="display:none"></span>
-    <div class="zoom-ctl" id="zoomCtl" style="display:none">
+  <div class="rnav">
+    <button class="back-btn" onclick="goDash()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Dashboard</button>
+    <span class="r-file" id="rFileName">Drop a PDF to start reading</span>
+    <span class="r-badge" id="rBadge"></span>
+    <div class="zoom-ctl" id="zoomCtl">
       <button onclick="changeZoom(-0.15)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
       <span class="zoom-val" id="zoomVal">100%</span>
       <button onclick="changeZoom(0.15)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     </div>
-    <button class="back-btn" onclick="showApiModal()" style="margin-left:auto">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      API Key
-    </button>
-    <button class="back-btn" onclick="toggleThumbStrip()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      Pages
-    </button>
+    <button class="back-btn" onclick="showApiModal()" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>API Key</button>
+    <button class="back-btn" onclick="toggleThumbs()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Pages</button>
   </div>
-
-  <div class="r-progress"><div class="r-pfill" id="rPfill"></div></div>
-
+  <div class="r-prog"><div class="r-pfill" id="rPfill"></div></div>
   <div class="r-main">
-    <!-- thumb strip -->
     <div class="thumb-strip" id="thumbStrip"></div>
-
-    <!-- pdf viewer -->
     <div class="pdf-viewer" id="pdfViewer">
       <div class="upload-ov" id="uploadOv">
         <div class="dz" id="dz" onclick="document.getElementById('fileInp').click()">
           <div style="font-size:2.5rem;margin-bottom:.75rem">📄</div>
           <h3>Drop your PDF here</h3>
-          <p>or click to browse<br/>Chapters extracted automatically · AI synopsis per chapter</p>
+          <p>or click to browse<br/>Progress saved automatically to your account</p>
           <input type="file" id="fileInp" accept=".pdf"/>
         </div>
       </div>
-      <div class="load-ov" id="loadOv">
-        <div class="spinner"></div>
-        <span id="loadMsg">Reading PDF…</span>
-        <span class="load-sub" id="loadSub"></span>
-      </div>
+      <div class="load-ov" id="loadOv"><div class="spinner"></div><span id="loadMsg">Reading PDF…</span><span class="load-sub" id="loadSub"></span></div>
       <div class="pdf-pages" id="pdfPages"></div>
     </div>
-
-    <!-- chapter sidebar -->
     <div class="ch-sidebar">
       <div class="csh-head">
-        <div class="csh-row">
-          <h3>Chapters <span class="src-tag" id="srcTag" style="display:none"></span></h3>
-          <span class="ch-cnt" id="chCnt">—</span>
-        </div>
-        <div class="csh-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="Search chapters…" oninput="filterCh(this.value)"/>
-        </div>
+        <div class="csh-row"><h3>Chapters <span class="src-tag" id="srcTag"></span></h3><span class="ch-cnt" id="chCnt">—</span></div>
+        <div class="csh-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search chapters…" oninput="filterCh(this.value)"/></div>
       </div>
-      <div class="ch-scroll" id="chScroll">
-        <div class="no-ch">Upload a PDF to see chapters.<br/>Gemini AI will extract them automatically.</div>
-      </div>
+      <div class="ch-scroll" id="chScroll"><div class="no-ch">Upload a PDF to see chapters.</div></div>
       <div class="csh-foot">
         <div class="csh-stat"><span class="csh-sl">Progress</span><span class="csh-sv" id="rPct">0%</span></div>
         <div class="csh-stat"><span class="csh-sl">Page</span><span class="csh-sv" id="rPageInfo">— / —</span></div>
@@ -738,22 +502,14 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
       </div>
     </div>
   </div>
-
-  <!-- chat fab -->
-  <button class="chat-fab" onclick="toggleChat()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  </button>
-
-  <!-- chat panel -->
+  <button class="chat-fab" onclick="toggleChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
   <div class="chat-pnl" id="chatPnl">
     <div class="chat-hd">
       <div class="chat-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
       <div class="chat-hi"><h4>PDF Assistant</h4><p>Powered by Gemini · Ask about your PDF</p></div>
       <button class="chat-x" onclick="toggleChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
-    <div class="chat-msgs" id="chatMsgs">
-      <div class="msg a"><div class="msg-b">Hi! Upload a PDF and ask me anything about it — chapters, summaries, explanations. 📖</div><span class="msg-t">Now</span></div>
-    </div>
+    <div class="chat-msgs" id="chatMsgs"><div class="msg a"><div class="msg-b">Hi! Upload a PDF and ask me anything — summaries, explanations, key ideas. 📖</div><span class="msg-t">Now</span></div></div>
     <div class="chips" id="chatChips">
       <div class="chip" onclick="useChip(this)">What is this book about?</div>
       <div class="chip" onclick="useChip(this)">Summarize chapter 1</div>
@@ -766,69 +522,164 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
   </div>
 </div>
 
-<!-- API KEY MODAL -->
+<!-- ══ API KEY MODAL ══ -->
 <div class="api-ov off" id="apiOv">
   <div class="api-modal">
     <h3>Gemini API Key</h3>
-    <p>Your key is saved in your browser — you only need to enter it once. It's never stored in the file so it's safe for GitHub.</p>
-    <div class="api-steps">
-      <strong>Get a free key:</strong><br/>
-      1. Go to <strong>aistudio.google.com/apikey</strong><br/>
-      2. Click <strong>Create API key in new project</strong><br/>
-      3. Copy the key → paste below
-    </div>
+    <p>Saved in your browser only — never in the file. Safe for GitHub.</p>
+    <div class="api-steps"><strong>Get a free key:</strong><br/>1. Go to <strong>aistudio.google.com/apikey</strong><br/>2. Click <strong>Create API key in new project</strong><br/>3. Copy → paste below</div>
     <div class="api-err" id="apiErr"></div>
     <input class="api-inp" id="apiInp" type="password" placeholder="AIzaSy… paste your key here"/>
     <div class="api-btns">
-      <button class="api-save" onclick="saveKey()">Save & Continue</button>
+      <button class="api-save" onclick="saveGeminiKey()">Save & Continue</button>
       <button class="api-skip" onclick="hideApiModal()">Skip</button>
     </div>
-    <div class="api-note">
-      <span>🔒 Browser only — never in the HTML file</span>
-      <button onclick="clearKey()">Clear saved key</button>
-    </div>
+    <div class="api-note"><span>🔒 Browser only — never in HTML</span><button onclick="clearGeminiKey()">Clear saved key</button></div>
   </div>
 </div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-/* ══════════════════════════════════
-   STATE
-══════════════════════════════════ */
+/* ══ STATE ══ */
+let fb = null;
+let currentUser = null;
+let userProfile = null;
 let GEMINI_KEY = '';
 const GEMINI_MODEL = 'gemini-1.5-flash';
 let pdfDoc = null, totalPages = 0, scale = 1.4;
 let allChapters = [], chapters = [], currentPage = 1;
 let pageTexts = [], synCache = {}, chatOpen = false, thumbsOn = true;
-let isSignup = false, currentUser = { name: '', email: '' };
-const STREAK = 7;
+let isSignup = false;
+let currentBookId = null, currentBookData = null;
 let _gemQ = Promise.resolve(), _lastCall = 0;
 const GAP = 4500;
 
-const SAMPLE_CHAPTERS = [
-  {title:"No One's Crazy",page:14,done:true},
-  {title:"Luck & Risk",page:28,done:true},
-  {title:"Never Enough",page:42,done:true},
-  {title:"Confounding Compounding",page:52,done:true},
-  {title:"Getting Wealthy vs Staying Wealthy",page:61,done:true},
-  {title:"Tails, You Win",page:76,done:true},
-  {title:"Freedom",page:89,done:true},
-  {title:"Man in the Car Paradox",page:99,done:false,cur:true},
-  {title:"Wealth is What You Don't See",page:109,done:false},
-  {title:"Save Money",page:119,done:false},
-  {title:"Reasonable > Rational",page:129,done:false},
-];
-const SAMPLE_RECENT = [
-  {e:'⚛️',t:'Atomic Habits',a:'James Clear',p:100,g:'linear-gradient(135deg,#06b6d4,#10b981)'},
-  {e:'🚀',t:'Zero to One',a:'Peter Thiel',p:82,g:'linear-gradient(135deg,#7c3aed,#06b6d4)'},
-  {e:'🧠',t:'Thinking Fast & Slow',a:'Daniel Kahneman',p:55,g:'linear-gradient(135deg,#f59e0b,#ff4f2b)'},
-  {e:'📡',t:'The Lean Startup',a:'Eric Ries',p:34,g:'linear-gradient(135deg,#10b981,#06b6d4)'},
-];
+/* ══ WAIT FOR FIREBASE ══ */
+function waitForFb() {
+  return new Promise(resolve => {
+    if (window._fbReady) { resolve(window._fb); return; }
+    document.addEventListener('fb-ready', () => resolve(window._fb), { once: true });
+  });
+}
 
-/* ══════════════════════════════════
-   AUTH FLOW
-══════════════════════════════════ */
+/* ══ INIT ══ */
+(async () => {
+  fb = await waitForFb();
+  // load gemini key
+  try { const k = localStorage.getItem('rpdf_key'); if (k?.startsWith('AIza')) { GEMINI_KEY = k; document.getElementById('apiInp').value = k; } } catch(e) {}
+
+  // Auth state listener
+  fb.onAuthStateChanged(fb.auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      await loadUserProfile(user);
+      showPage('pgDash');
+      buildDash();
+    } else {
+      currentUser = null;
+      userProfile = null;
+      showPage('pgLogin');
+    }
+  });
+})();
+
+/* ══ FIRESTORE HELPERS ══ */
+async function getUserRef(uid) { return fb.doc(fb.db, 'users', uid); }
+
+async function loadUserProfile(user) {
+  const ref = fb.doc(fb.db, 'users', user.uid);
+  const snap = await fb.getDoc(ref);
+  if (snap.exists()) {
+    userProfile = snap.data();
+  } else {
+    // New user — create profile
+    const name = user.displayName || user.email.split('@')[0];
+    userProfile = {
+      name, email: user.email,
+      streak: 0, lastReadDate: null,
+      stats: { booksOpened: 0, pagesRead: 0, synopsesUsed: 0, totalReadingDays: 0 },
+      createdAt: fb.serverTimestamp()
+    };
+    await fb.setDoc(ref, userProfile);
+  }
+  // Update streak
+  await updateStreak(user.uid);
+}
+
+async function updateStreak(uid) {
+  const ref = fb.doc(fb.db, 'users', uid);
+  const today = new Date().toDateString();
+  const lastDate = userProfile?.lastReadDate;
+  let streak = userProfile?.streak || 0;
+
+  if (lastDate === today) return; // already updated today
+
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  if (lastDate === yesterday.toDateString()) {
+    streak += 1; // continuing streak
+  } else if (lastDate !== today) {
+    streak = lastDate ? 0 : streak; // broke streak or first time
+  }
+
+  await fb.updateDoc(ref, { streak, lastReadDate: today });
+  userProfile.streak = streak;
+  userProfile.lastReadDate = today;
+}
+
+async function saveBookProgress(bookName, pageNum, chapterTitle, progress, chapters) {
+  if (!currentUser) return;
+  const booksRef = fb.collection(fb.db, 'users', currentUser.uid, 'books');
+
+  // Check if book exists
+  const q = fb.query(booksRef, fb.orderBy('lastRead', 'desc'));
+  const snap = await fb.getDocs(booksRef);
+  let bookRef = null;
+  snap.forEach(d => { if (d.data().name === bookName) bookRef = d.ref; });
+
+  const data = {
+    name: bookName,
+    currentPage: pageNum,
+    currentChapter: chapterTitle || '',
+    progress: Math.round(progress),
+    totalPages,
+    chapters: chapters.slice(0, 30).map(c => ({ title: c.title, page: c.page })),
+    lastRead: fb.serverTimestamp(),
+    emoji: getBookEmoji(bookName)
+  };
+
+  if (bookRef) {
+    await fb.updateDoc(bookRef, data);
+  } else {
+    await fb.addDoc(booksRef, { ...data, openedAt: fb.serverTimestamp() });
+    // increment booksOpened stat
+    const userRef = fb.doc(fb.db, 'users', currentUser.uid);
+    await fb.updateDoc(userRef, { 'stats.booksOpened': fb.increment(1) });
+    userProfile.stats.booksOpened = (userProfile.stats.booksOpened || 0) + 1;
+  }
+}
+
+async function incrementStat(stat) {
+  if (!currentUser) return;
+  const ref = fb.doc(fb.db, 'users', currentUser.uid);
+  await fb.updateDoc(ref, { [`stats.${stat}`]: fb.increment(1) });
+  if (userProfile?.stats) userProfile.stats[stat] = (userProfile.stats[stat] || 0) + 1;
+}
+
+async function loadRecentBooks() {
+  if (!currentUser) return [];
+  const booksRef = fb.collection(fb.db, 'users', currentUser.uid, 'books');
+  const q = fb.query(booksRef, fb.orderBy('lastRead', 'desc'), fb.limit(8));
+  const snap = await fb.getDocs(q);
+  const books = [];
+  snap.forEach(d => books.push({ id: d.id, ...d.data() }));
+  return books;
+}
+
+/* ══ AUTH ══ */
 function toggleForm() {
   isSignup = !isSignup;
   document.getElementById('nameField').style.display = isSignup ? 'block' : 'none';
@@ -837,101 +688,159 @@ function toggleForm() {
     ? 'Already have one? <span onclick="toggleForm()">Sign in →</span>'
     : 'New here? <span onclick="toggleForm()">Create account →</span>';
   document.getElementById('btnSubmit').textContent = isSignup ? 'Create my account' : 'Sign in to ReadPDF';
-  document.getElementById('switchRow').innerHTML = isSignup
+  document.getElementById('swRow').innerHTML = isSignup
     ? 'Already have an account? <a onclick="toggleForm()">Sign in</a>'
     : "Don't have an account? <a onclick=\"toggleForm()\">Sign up free</a>";
-  document.getElementById('loginErr').classList.remove('show');
+  document.getElementById('formErr').classList.remove('show');
 }
 
-function handleAuth() {
-  const nameEl  = document.getElementById('inpName');
-  const emailEl = document.getElementById('inpEmail');
-  const passEl  = document.getElementById('inpPass');
-  const errEl   = document.getElementById('loginErr');
-  const name    = nameEl.value.trim();
-  const email   = emailEl.value.trim();
-  const pass    = passEl.value.trim();
-
+async function handleAuth() {
+  const nameVal  = document.getElementById('inpName').value.trim();
+  const emailVal = document.getElementById('inpEmail').value.trim();
+  const passVal  = document.getElementById('inpPass').value.trim();
+  const errEl    = document.getElementById('formErr');
+  const btn      = document.getElementById('btnSubmit');
   errEl.classList.remove('show');
 
-  // Validate
-  if (isSignup && !name) {
-    showFieldErr(nameEl, 'Please enter your name');
-    return;
-  }
-  if (!email || !email.includes('@')) {
-    showFieldErr(emailEl, 'Please enter a valid email address');
-    return;
-  }
-  if (!pass || pass.length < 6) {
-    showFieldErr(passEl, 'Password must be at least 6 characters');
-    return;
-  }
+  if (isSignup && !nameVal) { showFieldErr('inpName', 'Please enter your name'); return; }
+  if (!emailVal || !emailVal.includes('@')) { showFieldErr('inpEmail', 'Please enter a valid email'); return; }
+  if (!passVal || passVal.length < 6) { showFieldErr('inpPass', 'Password must be at least 6 characters'); return; }
 
-  // Derive display name
-  const displayName = isSignup
-    ? name.charAt(0).toUpperCase() + name.slice(1)
-    : email.split('@')[0].replace(/[^a-zA-Z]/g,' ').trim().split(' ')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Reader';
+  btn.disabled = true;
+  btn.textContent = isSignup ? 'Creating account…' : 'Signing in…';
 
-  currentUser = { name: displayName, email };
-  goDash();
+  try {
+    if (isSignup) {
+      const cred = await fb.createUserWithEmailAndPassword(fb.auth, emailVal, passVal);
+      await fb.updateProfile(cred.user, { displayName: nameVal });
+    } else {
+      await fb.signInWithEmailAndPassword(fb.auth, emailVal, passVal);
+    }
+    // onAuthStateChanged will handle the rest
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = isSignup ? 'Create my account' : 'Sign in to ReadPDF';
+    errEl.textContent = firebaseAuthError(e.code);
+    errEl.classList.add('show');
+  }
 }
 
-function showFieldErr(el, msg) {
+function firebaseAuthError(code) {
+  const map = {
+    'auth/email-already-in-use': 'This email is already registered. Try signing in.',
+    'auth/invalid-email': 'Please enter a valid email address.',
+    'auth/weak-password': 'Password must be at least 6 characters.',
+    'auth/user-not-found': 'No account found with this email.',
+    'auth/wrong-password': 'Incorrect password. Try again.',
+    'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
+    'auth/invalid-credential': 'Invalid email or password.',
+  };
+  return map[code] || 'Something went wrong. Please try again.';
+}
+
+function showFieldErr(id, msg) {
+  const el = document.getElementById(id);
   el.classList.add('err');
-  document.getElementById('loginErr').textContent = msg;
-  document.getElementById('loginErr').classList.add('show');
+  document.getElementById('formErr').textContent = msg;
+  document.getElementById('formErr').classList.add('show');
   el.focus();
   setTimeout(() => el.classList.remove('err'), 600);
 }
 
-/* ══════════════════════════════════
-   NAVIGATION
-══════════════════════════════════ */
-function showPage(id) {
-  document.querySelectorAll('.pg').forEach(p => p.classList.add('off'));
-  document.getElementById(id).classList.remove('off');
+async function doSignOut() {
+  await fb.signOut(fb.auth);
+  // onAuthStateChanged handles navigation
 }
-function goLogin()  { showPage('pgLogin'); }
-function goDash()   { showPage('pgDash'); buildDash(); }
-function goReader() { showPage('pgReader'); }
 
-/* ══════════════════════════════════
-   DASHBOARD BUILD
-══════════════════════════════════ */
-function buildDash() {
-  const name = currentUser.name || 'Reader';
+/* ══ DASHBOARD BUILD ══ */
+async function buildDash() {
+  if (!currentUser || !userProfile) return;
+  const name = userProfile.name || currentUser.displayName || currentUser.email.split('@')[0];
   const h = new Date().getHours();
   const tod = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
   const icon = h < 12 ? '☀️' : h < 17 ? '⛅' : '🌙';
 
-  document.getElementById('greetTxt').innerHTML = `Good ${tod}, <em id="greetName">${esc(name)}</em> ${icon}`;
-  document.getElementById('greetSub2').textContent = `You're on a ${STREAK}-day streak — don't break it today!`;
+  document.getElementById('greetTxt').innerHTML = `Good ${tod}, <em>${esc(name)}</em> ${icon}`;
   document.getElementById('dashAvatar').textContent = name.slice(0,2).toUpperCase();
 
-  // streak
-  setStreakGlow(STREAK);
-  buildStreakDays(STREAK);
+  const streak = userProfile.streak || 0;
+  const stats = userProfile.stats || {};
 
-  // chapters mini
-  const el = document.getElementById('dashChMini');
-  el.innerHTML = SAMPLE_CHAPTERS.map((c,i) =>
-    `<div class="ch-mi ${c.cur?'cur':''}">
-      <span class="cn">${i+1}</span>
-      <span class="ct">${esc(c.title)}</span>
-      <span class="cd ${c.done?'cd-done':c.cur?'cd-cur':'cd-todo'}"></span>
-    </div>`
-  ).join('');
+  document.getElementById('greetSub').textContent = streak > 0
+    ? `You're on a ${streak}-day streak — keep it going!`
+    : `Welcome! Start reading to build your streak.`;
 
-  // recent
-  document.getElementById('recList').innerHTML = SAMPLE_RECENT.map(b =>
-    `<div class="rec-item">
-      <div class="ri-cov" style="background:${b.g}">${b.e}</div>
+  // Stats
+  document.getElementById('statBooks').textContent    = stats.booksOpened || 0;
+  document.getElementById('statPages').textContent    = (stats.pagesRead || 0).toLocaleString();
+  document.getElementById('statSynopses').textContent = stats.synopsesUsed || 0;
+  document.getElementById('statStreak').textContent   = streak;
+
+  // Streak card
+  setStreakGlow(streak);
+  buildStreakDays(streak);
+  document.getElementById('navStreakNum').textContent = streak;
+
+  // Recent books
+  const books = await loadRecentBooks();
+  buildRecentBooks(books);
+  buildCurrentBook(books[0]);
+}
+
+function buildCurrentBook(book) {
+  const el = document.getElementById('curBookContent');
+  if (!book) {
+    el.className = 'empty-state';
+    el.innerHTML = 'No book open yet.<br/>Click "Open PDF" to start reading!';
+    return;
+  }
+  el.className = '';
+  const chapters = (book.chapters || []).slice(0, 12);
+  const curChIdx = chapters.findIndex(c => c.page > book.currentPage) - 1;
+
+  el.innerHTML = `
+    <div class="book-row">
+      <div class="b-cover" style="background:var(--g1)">${book.emoji || '📖'}</div>
+      <div class="b-info">
+        <div class="b-title">${esc(book.name)}</div>
+        <div class="b-author">${book.totalPages || '?'} pages</div>
+        <div class="b-ch-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <strong>${esc(book.currentChapter || 'Reading…')}</strong> <span>· p.${book.currentPage}</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="prog-row"><span class="prog-lbl">Progress</span><span class="prog-pct">${book.progress || 0}%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:${book.progress || 0}%"></div></div>
+    </div>
+    ${chapters.length ? `<div><div class="sec-lbl" style="margin-bottom:.4rem">Chapters</div>
+    <div class="ch-mini">${chapters.map((c,i) => {
+      const done = c.page < book.currentPage;
+      const cur  = i === curChIdx || (i === 0 && curChIdx < 0);
+      return `<div class="ch-mi ${cur?'cur':''}">
+        <span class="cn">${i+1}</span>
+        <span class="ct">${esc(c.title)}</span>
+        <span class="cd" style="background:${done?'#7c3aed':cur?'#ff4f2b':'var(--s3)'}"></span>
+      </div>`;
+    }).join('')}</div></div>` : ''}
+    <button class="btn-continue" onclick="goReader()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Continue Reading
+    </button>`;
+}
+
+function buildRecentBooks(books) {
+  const el = document.getElementById('recList');
+  if (!books.length) { el.innerHTML = '<div class="empty-state">No books yet.<br/>Open a PDF to get started!</div>'; return; }
+  const grads = ['var(--g1)','var(--g2)','var(--g3)','linear-gradient(135deg,#10b981,#0ea5e9)','linear-gradient(135deg,#f59e0b,#10b981)'];
+  el.innerHTML = books.map((b,i) =>
+    `<div class="rec-item" onclick="goReader()">
+      <div class="ri-cov" style="background:${grads[i%grads.length]}">${b.emoji||'📖'}</div>
       <div class="ri-info">
-        <div class="ri-title">${esc(b.t)}</div>
-        <div class="ri-meta">${esc(b.a)} · ${b.p}%</div>
-        <div class="ri-bar"><div class="ri-fill" style="width:${b.p}%"></div></div>
+        <div class="ri-title">${esc(b.name)}</div>
+        <div class="ri-meta">p.${b.currentPage||1} · ${b.progress||0}%</div>
+        <div class="ri-bar"><div class="ri-fill" style="width:${b.progress||0}%"></div></div>
       </div>
     </div>`
   ).join('');
@@ -940,39 +849,57 @@ function buildDash() {
 function setStreakGlow(n) {
   const em = document.getElementById('strEmoji');
   const nav = document.getElementById('navStreakEmoji');
-  document.getElementById('navStreakNum').textContent = n;
   document.getElementById('strNum').textContent = n;
   let glow, sub;
-  if (n <= 2)       { glow='drop-shadow(0 0 6px #f59e0b66)'; sub='Just getting started!'; }
+  if (n === 0)      { glow='none'; sub='No streak yet — start today!'; }
+  else if (n <= 2)  { glow='drop-shadow(0 0 6px #f59e0b66)'; sub='Just getting started!'; }
   else if (n <= 5)  { glow='drop-shadow(0 0 14px #f59e0baa)'; sub='Nice momentum!'; }
-  else if (n <= 9)  { glow='drop-shadow(0 0 24px #f59e0bcc)'; sub='days in a row · Keep going!'; }
+  else if (n <= 9)  { glow='drop-shadow(0 0 24px #f59e0bcc)'; sub=`${n} days in a row · Keep going!`; }
   else if (n <= 14) { glow='drop-shadow(0 0 36px #f59e0bee) drop-shadow(0 0 60px #ff4f2b66)'; sub="You're on fire! 🔥"; }
   else              { glow='drop-shadow(0 0 50px #f59e0b) drop-shadow(0 0 90px #ff4f2baa)'; sub='LEGENDARY! ⚡'; }
   if (em)  em.style.filter = glow;
   if (nav) nav.style.filter = glow;
-  document.getElementById('strSub').textContent = `${n} ${sub}`;
+  document.getElementById('strSub').textContent = sub;
 }
 
 function buildStreakDays(n) {
   const days = ['M','T','W','T','F','S','S'];
   const today = new Date().getDay();
+  const todayIdx = today === 0 ? 6 : today - 1;
   document.getElementById('strDays').innerHTML = days.map((d,i) => {
-    const cls = i < (n % 7) ? 'done' : i === (n % 7) ? 'today' : 'miss';
+    let cls = 'miss';
+    if (i === todayIdx) cls = 'today';
+    else if (i < todayIdx && (todayIdx - i) <= n) cls = 'done';
     return `<div class="sd ${cls}">${d}</div>`;
   }).join('');
 }
 
-/* ══════════════════════════════════
-   GEMINI API
-══════════════════════════════════ */
-function loadKey() {
-  try {
-    const k = localStorage.getItem('rpdf_key');
-    if (k && k.startsWith('AIza')) { GEMINI_KEY = k; return true; }
-  } catch(e) {}
-  return false;
+function getBookEmoji(name) {
+  const n = name.toLowerCase();
+  if (n.includes('money')||n.includes('financ')||n.includes('invest')) return '💰';
+  if (n.includes('science')||n.includes('physics')||n.includes('biology')) return '🔬';
+  if (n.includes('history')) return '📜';
+  if (n.includes('code')||n.includes('program')) return '💻';
+  if (n.includes('habit')||n.includes('atomic')) return '⚛️';
+  if (n.includes('think')||n.includes('mind')||n.includes('psych')) return '🧠';
+  if (n.includes('startup')||n.includes('business')) return '🚀';
+  return ['📖','📚','📕','📗','📘','📙'][Math.floor(Math.random()*6)];
 }
-function saveKey() {
+
+/* ══ NAVIGATION ══ */
+function showPage(id) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.add('off'));
+  document.getElementById(id).classList.remove('off');
+}
+function goDash() {
+  showPage('pgDash');
+  if (currentUser) buildDash();
+}
+function goReader() { showPage('pgReader'); }
+
+/* ══ GEMINI ══ */
+function loadGeminiKey() { try { const k = localStorage.getItem('rpdf_key'); if(k?.startsWith('AIza')){ GEMINI_KEY=k; return true; } } catch(e){} return false; }
+function saveGeminiKey() {
   const k = document.getElementById('apiInp').value.trim();
   const err = document.getElementById('apiErr');
   if (!k) { err.textContent='Please paste your key'; err.classList.add('show'); return; }
@@ -981,20 +908,18 @@ function saveKey() {
   GEMINI_KEY = k;
   try { localStorage.setItem('rpdf_key', k); } catch(e) {}
   hideApiModal();
+  showToast('✦ Gemini API key saved!');
   document.getElementById('rBadge').textContent = '✦ Gemini Ready';
   document.getElementById('rBadge').style.display = '';
 }
-function clearKey() {
+function clearGeminiKey() {
   try { localStorage.removeItem('rpdf_key'); } catch(e) {}
   GEMINI_KEY = '';
   document.getElementById('apiInp').value = '';
   document.getElementById('apiErr').textContent = 'Key cleared — paste a new one';
   document.getElementById('apiErr').classList.add('show');
 }
-function showApiModal() {
-  if (GEMINI_KEY) document.getElementById('apiInp').value = GEMINI_KEY;
-  document.getElementById('apiOv').classList.remove('off');
-}
+function showApiModal() { document.getElementById('apiOv').classList.remove('off'); }
 function hideApiModal() { document.getElementById('apiOv').classList.add('off'); }
 
 async function callGemini(prompt, tokens=400, temp=0.3) {
@@ -1004,17 +929,13 @@ async function callGemini(prompt, tokens=400, temp=0.3) {
     if (_lastCall && d < GAP) await sleep(GAP - d);
   });
   await _gemQ;
-
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
-  for (let i = 0; i < 4; i++) {
-    if (i > 0) await sleep([0,15000,30000,60000][i]);
+  for (let i=0; i<4; i++) {
+    if (i>0) await sleep([0,15000,30000,60000][i]);
     _lastCall = Date.now();
-    const res = await fetch(url, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:temp,maxOutputTokens:tokens} })
-    });
-    if (res.status === 429) continue;
-    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message||`HTTP ${res.status}`); }
+    const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:temp,maxOutputTokens:tokens} }) });
+    if (res.status===429) continue;
+    if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e?.error?.message||`HTTP ${res.status}`); }
     const data = await res.json();
     const txt = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!txt) throw new Error('Empty response');
@@ -1025,39 +946,34 @@ async function callGemini(prompt, tokens=400, temp=0.3) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-/* ══════════════════════════════════
-   PDF LOADING
-══════════════════════════════════ */
-document.getElementById('fileInp').addEventListener('change', e => {
-  if (e.target.files[0]) loadPDF(e.target.files[0]);
-});
+/* ══ PDF LOADING ══ */
+document.getElementById('fileInp').addEventListener('change', e => { if(e.target.files[0]) loadPDF(e.target.files[0]); });
 const dz = document.getElementById('dz');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('over'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('over');
-  const f = e.dataTransfer.files[0];
-  if (f?.type === 'application/pdf') loadPDF(f);
-});
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f?.type==='application/pdf') loadPDF(f); });
 
 async function loadPDF(file) {
   document.getElementById('uploadOv').classList.add('off');
-  setLoad(true, 'Loading PDF…', '');
+  setLoad(true,'Loading PDF…','');
+  const fname = file.name.replace('.pdf','');
   document.getElementById('rFileName').textContent = file.name;
   document.getElementById('zoomCtl').style.display = 'flex';
-  synCache = {};
+  synCache = {}; allChapters = []; currentBookId = null;
 
   const buf = await file.arrayBuffer();
-  pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+  pdfDoc = await pdfjsLib.getDocument({data:buf}).promise;
   totalPages = pdfDoc.numPages;
   document.getElementById('rPageInfo').textContent = `1 / ${totalPages}`;
 
-  setLoad(true, 'Rendering pages…', `${totalPages} pages`);
+  setLoad(true,'Rendering pages…',`${totalPages} pages`);
   await renderPages();
   setLoad(false);
 
   setSidebarSpinner('Reading text…');
+  setLoad(true,'Reading text…','Scanning all pages');
   await extractText();
+  setLoad(false);
 
   setSidebarSpinner(GEMINI_KEY ? '✦ Gemini detecting chapters…' : 'Scanning chapters…');
   const chs = await detectChapters();
@@ -1065,380 +981,284 @@ async function loadPDF(file) {
   renderChList(chapters);
   document.getElementById('chCnt').textContent = `${chs.length} found`;
   setupScroll();
+
+  // Update streak for today's reading
+  if (currentUser) {
+    await updateStreak(currentUser.uid);
+    // Save initial book record
+    await saveBookProgress(fname, 1, chs[0]?.title || '', 0, chs);
+    showToast('📖 Progress saving automatically!');
+  }
 }
 
 function setLoad(on, msg='', sub='') {
-  const el = document.getElementById('loadOv');
-  el.classList.toggle('on', on);
+  document.getElementById('loadOv').classList.toggle('on', on);
   document.getElementById('loadMsg').textContent = msg;
   document.getElementById('loadSub').textContent = sub;
 }
 
 async function extractText() {
   pageTexts = [];
-  for (let i = 1; i <= pdfDoc.numPages; i++) {
+  for (let i=1; i<=pdfDoc.numPages; i++) {
     const pg = await pdfDoc.getPage(i);
     const tc = await pg.getTextContent();
     const lm = {};
-    for (const it of tc.items) {
-      if (!it.str.trim()) continue;
-      const y = Math.round(it.transform[5]);
-      lm[y] = (lm[y]||'') + it.str;
-    }
+    for (const it of tc.items) { if(!it.str.trim()) continue; const y=Math.round(it.transform[5]); lm[y]=(lm[y]||'')+it.str; }
     pageTexts.push({ page:i, text:Object.values(lm).join('\n') });
   }
 }
 
-/* ══════════════════════════════════
-   CHAPTER DETECTION — index-first
-══════════════════════════════════ */
+/* ══ CHAPTER DETECTION ══ */
 async function detectChapters() {
-  // 1. PDF outline (free)
   try {
     const ol = await pdfDoc.getOutline();
-    if (ol?.length >= 2) {
-      const r = await parseOutline(ol);
-      if (r.length >= 2) { setBadge('outline','● Built-in'); return r; }
-    }
+    if (ol?.length >= 2) { const r=await parseOutline(ol); if(r.length>=2){setBadge('outline','● Built-in');return r;} }
   } catch(e) {}
-
-  // 2. TOC page scan (free)
-  const toc = scanTOC();
-  if (toc.length >= 3) { setBadge('outline','● TOC page'); return toc; }
-
-  // 3. Gemini on first 10 pages only
-  if (GEMINI_KEY) {
-    try {
-      const r = await aiDetect();
-      if (r.length >= 2) { setBadge('ai','✦ AI'); return r; }
-    } catch(e) { console.warn('AI chapter detect failed:', e.message); }
-  }
-
-  // 4. Regex
-  const r = regexScan();
-  setBadge('scan','○ Scan');
-  return r;
+  const toc = scanTOC(); if(toc.length>=3){setBadge('outline','● TOC');return toc;}
+  if (GEMINI_KEY) { try { const r=await aiDetect(); if(r.length>=2){setBadge('ai','✦ AI');return r;} } catch(e){} }
+  const r=regexScan(); setBadge('scan','○ Scan'); return r;
 }
 
 async function parseOutline(ol) {
-  const res = [];
+  const res=[];
   for (const item of ol) {
-    if (!item.dest && !item.url) continue;
-    let pn = 1;
-    try {
-      let d = item.dest;
-      if (typeof d==='string') d = await pdfDoc.getDestination(d);
-      if (d) pn = await pdfDoc.getPageIndex(d[0]) + 1;
-    } catch(e) {}
-    const children = [];
-    for (const sub of (item.items||[]).slice(0,5)) {
-      let sp = pn;
-      try {
-        let d = sub.dest;
-        if (typeof d==='string') d = await pdfDoc.getDestination(d);
-        if (d) sp = await pdfDoc.getPageIndex(d[0]) + 1;
-      } catch(e) {}
-      children.push({ title: sub.title, page: sp });
-    }
-    res.push({ title: item.title, page: pn, children });
+    if (!item.dest&&!item.url) continue;
+    let pn=1;
+    try { let d=item.dest; if(typeof d==='string') d=await pdfDoc.getDestination(d); if(d) pn=await pdfDoc.getPageIndex(d[0])+1; } catch(e){}
+    const children=[];
+    for (const sub of (item.items||[]).slice(0,5)) { let sp=pn; try { let d=sub.dest; if(typeof d==='string') d=await pdfDoc.getDestination(d); if(d) sp=await pdfDoc.getPageIndex(d[0])+1; }catch(e){} children.push({title:sub.title,page:sp}); }
+    res.push({title:item.title,page:pn,children});
   }
   return res;
 }
 
 function scanTOC() {
-  const re = /(.{3,60})\s+\.{2,}\s*(\d+)$|(.{3,60})\s{3,}(\d+)$/;
-  const found = [];
+  const re=/(.{3,60})\s+\.{2,}\s*(\d+)$|(.{3,60})\s{3,}(\d+)$/;
+  const found=[];
   for (const pt of pageTexts.slice(0,15)) {
-    const lines = pt.text.split('\n'); let cnt = 0;
-    for (const ln of lines) {
-      const m = ln.trim().match(re);
-      if (m) {
-        cnt++;
-        const title = (m[1]||m[3]).trim(), pg = parseInt(m[2]||m[4]);
-        if (title.length>2 && pg>0 && pg<=totalPages) found.push({title,page:pg,children:[]});
-      }
-    }
-    if (cnt >= 4) return found;
+    const lines=pt.text.split('\n'); let cnt=0;
+    for (const ln of lines) { const m=ln.trim().match(re); if(m){cnt++; const t=(m[1]||m[3]).trim(),pg=parseInt(m[2]||m[4]); if(t.length>2&&pg>0&&pg<=totalPages) found.push({title:t,page:pg,children:[]});} }
+    if (cnt>=4) return found;
   }
   return [];
 }
 
 async function aiDetect() {
-  let sample = '';
-  for (const pt of pageTexts.slice(0,10)) sample += `\n--- PAGE ${pt.page} ---\n${pt.text.slice(0,500)}`;
-  const prompt = `Find ALL chapters in this PDF. "--- PAGE N ---" marks page numbers.
-Return ONLY raw JSON array no markdown: [{"title":"Chapter 1","page":1,"children":[]},...]
-TEXT: ${sample.slice(0,12000)}`;
-  const raw = await callGemini(prompt, 800, 0.05);
-  const clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-  const parsed = JSON.parse(clean);
-  return Array.isArray(parsed) ? parsed : [];
+  let sample='';
+  for (const pt of pageTexts.slice(0,10)) sample+=`\n--- PAGE ${pt.page} ---\n${pt.text.slice(0,500)}`;
+  const prompt=`Find ALL chapters in this PDF. "--- PAGE N ---" marks page numbers.\nReturn ONLY raw JSON: [{"title":"Chapter 1","page":1,"children":[]}, ...]\nTEXT: ${sample.slice(0,12000)}`;
+  const raw=await callGemini(prompt,800,0.05);
+  const clean=raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+  const parsed=JSON.parse(clean);
+  return Array.isArray(parsed)?parsed:[];
 }
 
 function regexScan() {
-  const re = /^(chapter\s+[\divxlcIVXLC]+|part\s+[\divxlcIVXLC]+|unit\s+\d+|\d{1,2}[\.\:]\s+[A-Z])/i;
-  const res = [];
-  for (const {page,text} of pageTexts) {
-    for (const ln of text.split('\n')) {
-      const t = ln.trim();
-      if (t.length<2||t.length>120) continue;
-      if (re.test(t) && !res.find(r=>r.page===page&&r.title===t)) res.push({title:t,page,children:[]});
-    }
-  }
-  const seen = new Set();
-  return res.filter(c=>{ const k=`${c.page}|${c.title}`; if(seen.has(k)) return false; seen.add(k); return true; }).slice(0,80);
+  const re=/^(chapter\s+[\divxlcIVXLC]+|part\s+[\divxlcIVXLC]+|unit\s+\d+|\d{1,2}[\.\:]\s+[A-Z])/i;
+  const res=[];
+  for (const {page,text} of pageTexts) { for (const ln of text.split('\n')) { const t=ln.trim(); if(t.length<2||t.length>120) continue; if(re.test(t)&&!res.find(r=>r.page===page&&r.title===t)) res.push({title:t,page,children:[]}); } }
+  const seen=new Set();
+  return res.filter(c=>{const k=`${c.page}|${c.title}`;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,80);
 }
 
-function setBadge(type, label) {
-  const b = document.getElementById('srcTag');
-  b.className = `src-tag src-${type}`;
-  b.textContent = label;
-  b.style.display = '';
-  document.getElementById('rBadge').textContent = label;
-  document.getElementById('rBadge').style.display = '';
+function setBadge(type,label) {
+  const b=document.getElementById('srcTag'); b.className=`src-tag src-${type}`; b.textContent=label; b.style.display='';
+  document.getElementById('rBadge').textContent=label; document.getElementById('rBadge').style.display='';
 }
 
-/* ══════════════════════════════════
-   CHAPTER LIST RENDER
-══════════════════════════════════ */
+/* ══ CHAPTER LIST ══ */
 function renderChList(list) {
-  const el = document.getElementById('chScroll');
-  if (!list.length) { el.innerHTML = '<div class="no-ch">No chapters detected.<br/>Add API key for smarter detection.</div>'; return; }
-  el.innerHTML = list.map((ch,i) => {
-    const subs = (ch.children||[]).slice(0,5).map(s=>
-      `<div class="ci-sub-item" onclick="event.stopPropagation();goPage(${s.page})">
-        <span style="opacity:.35;font-size:.62rem;flex-shrink:0">↳</span>
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(s.title)}</span>
-        <span style="color:var(--txt3);flex-shrink:0;font-size:.65rem;margin-left:3px">p.${s.page}</span>
-      </div>`).join('');
-    const synBtn = GEMINI_KEY
-      ? `<button class="syn-btn" id="synbtn${i}" onclick="event.stopPropagation();toggleSyn(${i})">✦ Synopsis</button>` : '';
-    return `
-      <div class="ch-item" id="chi${i}" data-page="${ch.page}" onclick="goPage(${ch.page})">
-        <span class="ci-num">${i+1}</span>
-        <div class="ci-body">
-          <div class="ci-title" title="${esc(ch.title)}">${esc(ch.title)}</div>
-          <div class="ci-pg">Page ${ch.page}</div>
-          ${subs?`<div class="ci-sub">${subs}</div>`:''}
-          ${synBtn}
-        </div>
-      </div>
-      <div class="syn-card" id="syncard${i}">
-        <div class="syn-hd"><span class="syn-lbl">✦ AI Synopsis</span><button class="syn-x" onclick="closeSyn(${i})">×</button></div>
-        <div class="syn-txt" id="syntxt${i}"></div>
-      </div>`;
+  const el=document.getElementById('chScroll');
+  if (!list.length) { el.innerHTML='<div class="no-ch">No chapters detected.<br/>Add API key for smarter detection.</div>'; return; }
+  el.innerHTML=list.map((ch,i)=>{
+    const subs=(ch.children||[]).slice(0,5).map(s=>`<div class="ci-sub-item" onclick="event.stopPropagation();goPage(${s.page})"><span style="opacity:.35;font-size:.62rem">↳</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(s.title)}</span><span style="color:var(--txt3);margin-left:3px;font-size:.65rem">p.${s.page}</span></div>`).join('');
+    const synBtn=GEMINI_KEY?`<button class="syn-btn" id="synbtn${i}" onclick="event.stopPropagation();toggleSyn(${i})">✦ Synopsis</button>`:'';
+    return `<div class="ch-item" id="chi${i}" data-page="${ch.page}" onclick="goPage(${ch.page})"><span class="ci-num">${i+1}</span><div class="ci-body"><div class="ci-title" title="${esc(ch.title)}">${esc(ch.title)}</div><div class="ci-pg">Page ${ch.page}</div>${subs?`<div class="ci-sub">${subs}</div>`:''}${synBtn}</div></div><div class="syn-card" id="syncard${i}"><div class="syn-hd"><span class="syn-lbl">✦ AI Synopsis</span><button class="syn-x" onclick="closeSyn(${i})">×</button></div><div class="syn-txt" id="syntxt${i}"></div></div>`;
   }).join('');
 }
 
 function filterCh(q) {
-  chapters = q.toLowerCase().trim()
-    ? allChapters.filter(c=>c.title.toLowerCase().includes(q)||(c.children||[]).some(s=>s.title.toLowerCase().includes(q)))
-    : allChapters;
-  renderChList(chapters);
-  document.getElementById('chCnt').textContent = `${chapters.length} found`;
+  chapters=q.toLowerCase().trim()?allChapters.filter(c=>c.title.toLowerCase().includes(q)||(c.children||[]).some(s=>s.title.toLowerCase().includes(q))):allChapters;
+  renderChList(chapters); document.getElementById('chCnt').textContent=`${chapters.length} found`;
 }
 
 function setSidebarSpinner(msg) {
-  document.getElementById('chScroll').innerHTML =
-    `<div class="no-ch" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding-top:2rem">
-      <div class="spinner" style="width:18px;height:18px;border-width:1.5px"></div><span>${msg}</span></div>`;
-  document.getElementById('chCnt').textContent = '…';
+  document.getElementById('chScroll').innerHTML=`<div class="no-ch" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding-top:2rem"><div class="spinner" style="width:18px;height:18px;border-width:1.5px"></div><span>${msg}</span></div>`;
+  document.getElementById('chCnt').textContent='…';
 }
 
-/* ══════════════════════════════════
-   SYNOPSIS
-══════════════════════════════════ */
+/* ══ SYNOPSIS ══ */
 function getChText(idx) {
-  const ch = allChapters[idx], nx = allChapters[idx+1];
-  const s = ch.page-1, e = nx ? Math.min(nx.page-2,s+18) : Math.min(s+18,pageTexts.length-1);
+  const ch=allChapters[idx],nx=allChapters[idx+1];
+  const s=ch.page-1,e=nx?Math.min(nx.page-2,s+18):Math.min(s+18,pageTexts.length-1);
   return pageTexts.slice(s,e+1).map(p=>p.text).join('\n').slice(0,2500);
 }
 
 async function toggleSyn(idx) {
-  const card = document.getElementById(`syncard${idx}`);
-  const btn  = document.getElementById(`synbtn${idx}`);
+  const card=document.getElementById(`syncard${idx}`),btn=document.getElementById(`synbtn${idx}`);
   if (card.classList.contains('show')) { card.classList.remove('show'); btn.textContent='✦ Synopsis'; return; }
   if (synCache[idx]) { document.getElementById(`syntxt${idx}`).innerHTML=synCache[idx]; card.classList.add('show'); btn.textContent='Hide'; return; }
-
-  const txtEl = document.getElementById(`syntxt${idx}`);
-  txtEl.innerHTML = `<div class="syn-spin"><div class="mini-spin"></div> Reading chapter…</div>`;
+  const txtEl=document.getElementById(`syntxt${idx}`);
+  txtEl.innerHTML=`<div class="syn-spin"><div class="mini-spin"></div> Reading chapter…</div>`;
   card.classList.add('show'); btn.classList.add('loading'); btn.innerHTML='<div class="mini-spin"></div>';
-
   try {
-    const text = getChText(idx);
+    const text=getChText(idx);
     if (!text.trim()) { txtEl.innerHTML='No readable text found.'; btn.classList.remove('loading'); btn.textContent='Retry'; return; }
-    const prompt = `Summarize in 3 sentences. Chapter: "${allChapters[idx].title}". Key events/ideas, present tense, no preamble.\nText: ${text}`;
-    const reply = await callGemini(prompt, 200, 0.4);
-    const html = esc(reply).replace(/\n/g,'<br/>');
-    synCache[idx] = html;
-    txtEl.innerHTML = html;
+    const reply=await callGemini(`Summarize in 3 sentences. Chapter: "${allChapters[idx].title}". Key ideas, present tense, no preamble.\nText: ${text}`,200,0.4);
+    const html=esc(reply).replace(/\n/g,'<br/>');
+    synCache[idx]=html; txtEl.innerHTML=html;
     btn.classList.remove('loading'); btn.textContent='Hide';
+    // track synopsis usage
+    await incrementStat('synopsesUsed');
   } catch(e) {
-    txtEl.innerHTML = `<span style="color:var(--coral)">⚠️ ${esc(friendlyErr(e.message))}</span>`;
+    txtEl.innerHTML=`<span style="color:var(--coral)">⚠️ ${esc(friendlyErr(e.message))}</span>`;
     btn.classList.remove('loading'); btn.textContent='Retry';
   }
 }
 
-function closeSyn(idx) {
-  document.getElementById(`syncard${idx}`).classList.remove('show');
-  const b = document.getElementById(`synbtn${idx}`);
-  if (b) b.textContent='✦ Synopsis';
-}
+function closeSyn(idx) { document.getElementById(`syncard${idx}`).classList.remove('show'); const b=document.getElementById(`synbtn${idx}`); if(b) b.textContent='✦ Synopsis'; }
 
-/* ══════════════════════════════════
-   RENDER PAGES + THUMBS
-══════════════════════════════════ */
+/* ══ RENDER PAGES + THUMBS ══ */
 async function renderPages() {
-  const c = document.getElementById('pdfPages');
-  c.innerHTML='';
-  document.getElementById('thumbStrip').innerHTML='';
+  const c=document.getElementById('pdfPages'); c.innerHTML=''; document.getElementById('thumbStrip').innerHTML='';
   for (let i=1;i<=totalPages;i++) {
-    const wrap = document.createElement('div'); wrap.className='pg-wrap'; wrap.id=`p${i}`; wrap.dataset.page=i;
-    const canvas = document.createElement('canvas');
-    const lbl = document.createElement('div'); lbl.className='pg-lbl'; lbl.textContent=`${i}/${totalPages}`;
+    const wrap=document.createElement('div'); wrap.className='pg-wrap'; wrap.id=`p${i}`; wrap.dataset.page=i;
+    const canvas=document.createElement('canvas');
+    const lbl=document.createElement('div'); lbl.className='pg-lbl'; lbl.textContent=`${i}/${totalPages}`;
     wrap.appendChild(canvas); wrap.appendChild(lbl); c.appendChild(wrap);
-    if (i<=5) await renderPage(i,canvas,scale);
-    else renderPage(i,canvas,scale);
-
-    // thumb
-    const th = document.createElement('div'); th.className='th-item'; th.id=`th${i}`;
-    const tc = document.createElement('canvas');
-    const tn = document.createElement('div'); tn.className='th-num'; tn.textContent=i;
-    th.appendChild(tc); th.appendChild(tn);
-    th.onclick = () => goPage(i);
+    if (i<=5) await renderPage(i,canvas,scale); else renderPage(i,canvas,scale);
+    const th=document.createElement('div'); th.className='th-item'; th.id=`th${i}`;
+    const tc=document.createElement('canvas');
+    const tn=document.createElement('div'); tn.className='th-num'; tn.textContent=i;
+    th.appendChild(tc); th.appendChild(tn); th.onclick=()=>goPage(i);
     document.getElementById('thumbStrip').appendChild(th);
-    setTimeout(() => renderPage(i,tc,0.18), i*25);
+    setTimeout(()=>renderPage(i,tc,0.18),i*25);
   }
 }
 
 async function renderPage(num,canvas,sc) {
-  try {
-    const pg = await pdfDoc.getPage(num);
-    const vp = pg.getViewport({scale:sc});
-    canvas.width=vp.width; canvas.height=vp.height;
-    await pg.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
-  } catch(e) {}
+  try { const pg=await pdfDoc.getPage(num); const vp=pg.getViewport({scale:sc}); canvas.width=vp.width; canvas.height=vp.height; await pg.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise; } catch(e){}
 }
 
-function toggleThumbStrip() {
-  thumbsOn = !thumbsOn;
-  document.getElementById('thumbStrip').classList.toggle('off', !thumbsOn);
-}
+function toggleThumbs() { thumbsOn=!thumbsOn; document.getElementById('thumbStrip').classList.toggle('off',!thumbsOn); }
 
-/* ══════════════════════════════════
-   SCROLL + NAVIGATION
-══════════════════════════════════ */
+/* ══ SCROLL + PROGRESS SAVE ══ */
+let saveTimer = null;
 function setupScroll() {
-  const v = document.getElementById('pdfViewer');
-  v.removeEventListener('scroll', onScroll);
-  v.addEventListener('scroll', onScroll, {passive:true});
+  const v=document.getElementById('pdfViewer');
+  v.removeEventListener('scroll',onScroll);
+  v.addEventListener('scroll',onScroll,{passive:true});
 }
 
 function onScroll() {
-  const v = document.getElementById('pdfViewer');
-  const st = v.scrollTop, sh = v.scrollHeight - v.clientHeight;
-  const pct = sh>0 ? Math.round((st/sh)*100) : 0;
-  document.getElementById('rPfill').style.width = pct+'%';
-  document.getElementById('cshBf').style.width  = pct+'%';
-  document.getElementById('rPct').textContent   = pct+'%';
+  const v=document.getElementById('pdfViewer');
+  const st=v.scrollTop,sh=v.scrollHeight-v.clientHeight;
+  const pct=sh>0?Math.round((st/sh)*100):0;
+  document.getElementById('rPfill').style.width=pct+'%';
+  document.getElementById('cshBf').style.width=pct+'%';
+  document.getElementById('rPct').textContent=pct+'%';
 
-  const vr = v.getBoundingClientRect(); let cur=1;
-  document.querySelectorAll('.pg-wrap').forEach(w => {
-    if (w.getBoundingClientRect().top <= vr.top + vr.height*.5) cur=parseInt(w.dataset.page);
-  });
-  if (cur !== currentPage) {
-    currentPage = cur;
-    document.getElementById('rPageInfo').textContent = `${cur} / ${totalPages}`;
+  const vr=v.getBoundingClientRect(); let cur=1;
+  document.querySelectorAll('.pg-wrap').forEach(w=>{if(w.getBoundingClientRect().top<=vr.top+vr.height*.5)cur=parseInt(w.dataset.page);});
+  if (cur!==currentPage) {
+    currentPage=cur;
+    document.getElementById('rPageInfo').textContent=`${cur} / ${totalPages}`;
     hlChapter(cur); hlThumb(cur);
+
+    // Debounced progress save to Firestore
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      if (!currentUser || !pdfDoc) return;
+      const fname = document.getElementById('rFileName').textContent.replace('.pdf','');
+      const curChIdx = allChapters.reduce((a,c,i)=>c.page<=cur?i:a,0);
+      const curCh = allChapters[curChIdx];
+      const progress = Math.round((cur/totalPages)*100);
+      await saveBookProgress(fname, cur, curCh?.title||'', progress, allChapters);
+
+      // Update pages read stat (roughly)
+      if (cur % 5 === 0) { // every 5 pages
+        const ref = fb.doc(fb.db, 'users', currentUser.uid);
+        await fb.updateDoc(ref, {'stats.pagesRead': fb.increment(5)});
+      }
+    }, 2000);
   }
 }
 
 function hlChapter(page) {
-  const items = document.querySelectorAll('.ch-item');
-  let idx=-1; allChapters.forEach((c,i) => { if(c.page<=page) idx=i; });
-  items.forEach((el,i) => el.classList.toggle('active', i===idx));
-  if (idx>=0 && items[idx]) items[idx].scrollIntoView({behavior:'smooth',block:'nearest'});
+  const items=document.querySelectorAll('.ch-item'); let idx=-1;
+  allChapters.forEach((c,i)=>{if(c.page<=page)idx=i;});
+  items.forEach((el,i)=>el.classList.toggle('active',i===idx));
+  if(idx>=0&&items[idx]) items[idx].scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function hlThumb(page) {
-  document.querySelectorAll('.th-item').forEach(t => t.classList.toggle('active', t.id===`th${page}`));
+  document.querySelectorAll('.th-item').forEach(t=>t.classList.toggle('active',t.id===`th${page}`));
   document.getElementById(`th${page}`)?.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function goPage(n) {
-  document.getElementById(`p${n}`)?.scrollIntoView({behavior:'smooth',block:'start'});
-}
+function goPage(n) { document.getElementById(`p${n}`)?.scrollIntoView({behavior:'smooth',block:'start'}); }
 
 function changeZoom(d) {
-  scale = Math.max(0.5, Math.min(3, scale+d));
-  document.getElementById('zoomVal').textContent = Math.round(scale/1.4*100)+'%';
+  scale=Math.max(0.5,Math.min(3,scale+d));
+  document.getElementById('zoomVal').textContent=Math.round(scale/1.4*100)+'%';
   if (pdfDoc) renderPages();
 }
 
-/* ══════════════════════════════════
-   CHAT
-══════════════════════════════════ */
-function toggleChat() {
-  chatOpen = !chatOpen;
-  document.getElementById('chatPnl').classList.toggle('open', chatOpen);
-  if (chatOpen) setTimeout(()=>document.getElementById('chatTa').focus(),300);
-}
+/* ══ CHAT ══ */
+function toggleChat() { chatOpen=!chatOpen; document.getElementById('chatPnl').classList.toggle('open',chatOpen); if(chatOpen) setTimeout(()=>document.getElementById('chatTa').focus(),300); }
 function chatKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();} }
 function chatResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,65)+'px'; }
 function useChip(el) { document.getElementById('chatTa').value=el.textContent; document.getElementById('chatChips').style.display='none'; sendChat(); }
 
 async function sendChat() {
-  const ta = document.getElementById('chatTa');
-  const txt = ta.value.trim(); if(!txt) return;
+  const ta=document.getElementById('chatTa'); const txt=ta.value.trim(); if(!txt) return;
   if (!GEMINI_KEY) { addMsg('a','⚠️ Add your Gemini API key first — click "API Key" in the top bar.'); return; }
   addMsg('u',txt); ta.value=''; ta.style.height='auto';
-  document.getElementById('chatSend').disabled=true;
-  document.getElementById('chatChips').style.display='none';
-  const tid = 'ty'+Date.now(); addTyping(tid);
+  document.getElementById('chatSend').disabled=true; document.getElementById('chatChips').style.display='none';
+  const tid='ty'+Date.now(); addTyping(tid);
   try {
-    const chIdx = allChapters.reduce((a,c,i)=>c.page<=currentPage?i:a,0);
-    const chList = allChapters.map((c,i)=>`${i+1}. ${c.title} (p.${c.page})`).join('\n');
-    const curTxt = allChapters.length ? getChText(chIdx).slice(0,1500) : '';
-    const prompt = `PDF reading assistant. Chapters:\n${chList||'None.'}\nCurrent page ${currentPage}. Chapter excerpt:\n${curTxt}\nUser: ${txt}`;
-    const reply = await callGemini(prompt,280,0.4);
+    const chIdx=allChapters.reduce((a,c,i)=>c.page<=currentPage?i:a,0);
+    const chList=allChapters.map((c,i)=>`${i+1}. ${c.title} (p.${c.page})`).join('\n');
+    const curTxt=allChapters.length?getChText(chIdx).slice(0,1500):'';
+    const prompt=`PDF reading assistant. Chapters:\n${chList||'None.'}\nCurrent page ${currentPage}. Chapter excerpt:\n${curTxt}\nUser: ${txt}`;
+    const reply=await callGemini(prompt,280,0.4);
     document.getElementById(tid)?.remove(); addMsg('a',reply);
   } catch(e) { document.getElementById(tid)?.remove(); addMsg('a','⚠️ '+friendlyErr(e.message)); }
   document.getElementById('chatSend').disabled=false;
 }
 
 function addMsg(role,txt) {
-  const msgs = document.getElementById('chatMsgs');
-  const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  const d = document.createElement('div'); d.className=`msg ${role}`;
+  const msgs=document.getElementById('chatMsgs');
+  const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const d=document.createElement('div'); d.className=`msg ${role}`;
   d.innerHTML=`<div class="msg-b">${esc(txt).replace(/\n/g,'<br/>')}</div><span class="msg-t">${t}</span>`;
   msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
 }
+
 function addTyping(id) {
-  const msgs = document.getElementById('chatMsgs');
-  const d = document.createElement('div'); d.className='msg a'; d.id=id;
+  const msgs=document.getElementById('chatMsgs');
+  const d=document.createElement('div'); d.className='msg a'; d.id=id;
   d.innerHTML=`<div class="msg-b"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
   msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
 }
 
-/* ══════════════════════════════════
-   UTILS
-══════════════════════════════════ */
+/* ══ TOAST ══ */
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ══ UTILS ══ */
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function friendlyErr(msg) {
-  if (!msg||msg==='NO_KEY') return 'No API key. Click "API Key" in the top bar.';
-  if (msg.includes('API_KEY_INVALID')||msg.includes('not valid')) return 'Invalid API key. Click "API Key" to update it.';
-  if (msg.includes('RATE_LIMIT')||msg.includes('429')||msg.includes('quota')) return 'Rate limit — please wait a minute and try again.';
-  if (msg.includes('not found')||msg.includes('not supported')) return 'Model not supported. Check your API key has Gemini enabled.';
+  if (!msg||msg==='NO_KEY') return 'No API key. Click "API Key" in top bar.';
+  if (msg.includes('API_KEY_INVALID')||msg.includes('not valid')) return 'Invalid API key. Click "API Key" to update.';
+  if (msg.includes('RATE_LIMIT')||msg.includes('429')||msg.includes('quota')) return 'Rate limit — wait a minute and try again.';
+  if (msg.includes('not found')||msg.includes('not supported')) return 'Gemini model not found. Check your API key.';
   return msg;
 }
 document.addEventListener('keydown', e => { if(e.key==='Escape') hideApiModal(); });
-
-/* ══════════════════════════════════
-   INIT
-══════════════════════════════════ */
-if (loadKey()) {
-  document.getElementById('apiInp').value = GEMINI_KEY;
-}
 </script>
 </body>
 </html>
