@@ -8,13 +8,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
 :root{
   --bg:#f7f5f0;--surface:#fff;--surface2:#f0ede6;
   --border:#e0ddd6;--border2:#ccc9c0;
   --text:#1a1916;--text2:#6b6860;--text3:#a8a59e;
   --accent:#c4502a;--accent-light:#faeee9;
-  --sidebar-w:310px;--chat-w:355px;
+  --sidebar-w:300px;--thumb-w:90px;--chat-w:340px;
 }
 [data-theme="dark"]{
   --bg:#131210;--surface:#1c1a16;--surface2:#242219;
@@ -22,41 +21,49 @@
   --text:#f0ede6;--text2:#a8a59e;--text3:#5a5850;
   --accent:#e06840;--accent-light:#2a1a12;
 }
-
 html,body{height:100%;overflow:hidden}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;transition:background .2s,color .2s}
 
 /* TOP BAR */
-.topbar{display:flex;align-items:center;gap:10px;padding:0 1rem;height:50px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;z-index:20}
-.brand{font-family:'DM Serif Display',serif;font-size:17px;display:flex;align-items:center;gap:6px}
-.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
-.topbar-file{font-size:11px;color:var(--text3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px}
-.ai-badge{font-size:10px;font-weight:500;background:var(--accent-light);color:var(--accent);padding:3px 8px;border-radius:99px;white-space:nowrap}
-.icon-btn{background:none;border:1px solid var(--border);border-radius:7px;padding:5px 9px;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:5px;font-size:12px;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.topbar{display:flex;align-items:center;gap:8px;padding:0 1rem;height:50px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;z-index:20}
+.brand{font-family:'DM Serif Display',serif;font-size:17px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.topbar-file{font-size:11px;color:var(--text3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
+.ai-badge{font-size:10px;font-weight:500;background:var(--accent-light);color:var(--accent);padding:3px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:7px;padding:5px 8px;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:4px;font-size:11px;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;flex-shrink:0}
 .icon-btn:hover{background:var(--surface2);color:var(--text)}
 .icon-btn svg{width:13px;height:13px;flex-shrink:0}
-.zoom-controls{display:flex;align-items:center;gap:3px}
-.zoom-val{font-size:11px;color:var(--text2);min-width:36px;text-align:center}
+.icon-btn.active{background:var(--accent-light);color:var(--accent);border-color:var(--accent)}
+.zoom-controls{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.zoom-val{font-size:11px;color:var(--text2);min-width:34px;text-align:center}
 
-/* PROGRESS BAR */
+/* PROGRESS */
 .progress-track{height:2px;background:var(--border);flex-shrink:0}
 .progress-fill{height:100%;width:0%;background:var(--accent);transition:width .25s ease}
 
-/* MAIN */
+/* LAYOUT */
 .main{display:flex;flex:1;overflow:hidden}
 
-/* ─── PDF PANEL ─── */
+/* THUMBNAIL PANEL */
+.thumb-panel{width:var(--thumb-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:8px 6px;transition:width .2s,opacity .2s}
+.thumb-panel.hidden{width:0;padding:0;overflow:hidden;opacity:0;pointer-events:none}
+.thumb-panel::-webkit-scrollbar{width:3px}
+.thumb-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+.thumb-item{cursor:pointer;border-radius:4px;overflow:hidden;border:1.5px solid transparent;transition:border-color .15s;flex-shrink:0;position:relative}
+.thumb-item:hover{border-color:var(--border2)}
+.thumb-item.active{border-color:var(--accent)}
+.thumb-item canvas{display:block;width:100%;height:auto}
+.thumb-num{position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:8px;color:#999;background:rgba(255,255,255,.7);padding:1px 0}
+[data-theme="dark"] .thumb-num{background:rgba(0,0,0,.5);color:#aaa}
+
+/* PDF PANEL */
 .pdf-panel{flex:1;overflow-y:auto;background:var(--bg);position:relative}
 .pdf-panel::-webkit-scrollbar{width:5px}
 .pdf-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
 
-/* Upload overlay — shown until a file is loaded */
-.upload-overlay{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  background:var(--bg);z-index:5;padding:2rem;
-}
+.upload-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:5;padding:2rem}
 .upload-overlay.hidden{display:none}
-
 .drop-zone{width:100%;max-width:380px;border:1.5px dashed var(--border2);border-radius:16px;padding:2.5rem 2rem;cursor:pointer;transition:background .15s,border-color .15s;background:var(--surface);text-align:center}
 .drop-zone:hover,.drop-zone.over{background:var(--surface2);border-color:var(--accent)}
 .dz-icon{width:44px;height:44px;margin:0 auto 1rem;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:center}
@@ -64,41 +71,46 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .drop-zone p{font-size:12px;color:var(--text3);line-height:1.6}
 .drop-zone input{display:none}
 
-/* Loading overlay */
-.loading-overlay{
-  position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
-  gap:.6rem;background:var(--bg);z-index:6;color:var(--text2);font-size:13px;
-}
+.loading-overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;background:var(--bg);z-index:6;color:var(--text2);font-size:13px}
 .loading-overlay.show{display:flex}
 .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .65s linear infinite}
 .load-sub{font-size:11px;color:var(--text3)}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Pages container — pages render here, always visible once loaded */
 .pages-container{display:flex;flex-direction:column;align-items:center;gap:12px;padding:1.25rem 1rem;min-height:100%}
-
 .page-wrap{position:relative;box-shadow:0 1px 12px rgba(0,0,0,.12);border-radius:3px;overflow:hidden;background:#fff;flex-shrink:0}
 .page-wrap canvas{display:block}
-.page-label{position:absolute;bottom:7px;right:9px;font-size:10px;color:#bbb;pointer-events:none;font-family:'DM Sans',sans-serif}
+.page-label{position:absolute;bottom:7px;right:9px;font-size:10px;color:#bbb;pointer-events:none}
 
-/* ─── SIDEBAR ─── */
+/* SIDEBAR */
 .sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
 .sidebar-head{padding:.85rem 1rem .7rem;border-bottom:1px solid var(--border);flex-shrink:0}
 .sidebar-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem}
 .sidebar-head-row h3{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
 .chapter-count{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 7px;border-radius:99px}
+
+.src-badge{font-size:9px;padding:2px 6px;border-radius:99px;font-weight:500;margin-left:4px}
+.src-badge.outline{background:#e8f5e9;color:#2e7d32}
+.src-badge.toc{background:#e3f2fd;color:#1565c0}
+.src-badge.ai{background:var(--accent-light);color:var(--accent)}
+.src-badge.scan{background:var(--surface2);color:var(--text3)}
+[data-theme="dark"] .src-badge.outline{background:#1b3a1f;color:#81c784}
+[data-theme="dark"] .src-badge.toc{background:#0d2a3f;color:#64b5f6}
+
 .search-wrap{position:relative}
 .search-wrap svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:12px;height:12px;color:var(--text3);pointer-events:none}
 .search-input{width:100%;padding:6px 10px 6px 26px;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);outline:none;transition:border-color .15s}
 .search-input::placeholder{color:var(--text3)}
 .search-input:focus{border-color:var(--accent)}
 
+/* CHAPTER LIST */
 .chapter-list{flex:1;overflow-y:auto;padding:.4rem 0}
 .chapter-list::-webkit-scrollbar{width:3px}
 .chapter-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
 
 .chapter-item{display:flex;align-items:flex-start;gap:9px;padding:.5rem 1rem;cursor:pointer;transition:background .12s;border-left:2.5px solid transparent}
 .chapter-item:hover{background:var(--surface2)}
+.chapter-item:hover .synopsis-btn{opacity:1}
 .chapter-item.active{background:var(--accent-light);border-left-color:var(--accent)}
 .chapter-item.active .ch-title,.chapter-item.active .ch-num{color:var(--accent)}
 .ch-num{font-size:10px;font-weight:500;color:var(--text3);min-width:20px;padding-top:2px;flex-shrink:0}
@@ -108,8 +120,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .ch-sub{margin-top:3px}
 .ch-sub-item{font-size:11px;color:var(--text2);padding:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:flex;align-items:center;gap:4px}
 .ch-sub-item:hover{color:var(--accent)}
+
+.synopsis-btn{opacity:0;transition:opacity .15s;background:var(--accent-light);border:1px solid var(--accent);color:var(--accent);font-size:10px;font-family:'DM Sans',sans-serif;padding:3px 7px;border-radius:99px;cursor:pointer;white-space:nowrap;margin-top:4px;display:inline-flex;align-items:center;gap:3px}
+.synopsis-btn svg{width:10px;height:10px}
+.synopsis-btn:hover{background:var(--accent);color:#fff}
+.synopsis-btn.loading{opacity:1;pointer-events:none}
+
+.synopsis-card{margin:.3rem 1rem .6rem 2.75rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.65rem .75rem;font-size:11px;line-height:1.65;display:none}
+.synopsis-card.show{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.syn-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
+.syn-label{font-size:9px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.syn-close{background:none;border:none;cursor:pointer;color:var(--text3);padding:0;font-size:14px;line-height:1}
+.syn-close:hover{color:var(--text)}
+.syn-text{color:var(--text2)}
+.syn-spinner{display:flex;align-items:center;gap:6px;color:var(--text3);font-size:11px}
+.mini-spinner{width:12px;height:12px;border:1.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+
 .no-chapters{padding:2rem 1rem;text-align:center;color:var(--text3);font-size:12px;line-height:1.7}
 
+/* SIDEBAR FOOTER */
 .sidebar-footer{padding:.7rem 1rem;border-top:1px solid var(--border);flex-shrink:0}
 .stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem}
 .stat-label{font-size:10px;color:var(--text3)}
@@ -117,58 +147,61 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .mini-bar{height:3px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-top:.35rem}
 .mini-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .4s ease}
 
-/* ─── CHAT FAB ─── */
+/* CHAT FAB */
 .chat-fab{position:fixed;bottom:1.5rem;right:calc(var(--sidebar-w) + 1.25rem);width:46px;height:46px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(196,80,42,.4);z-index:100;transition:transform .15s,box-shadow .15s}
 .chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(196,80,42,.5)}
 .chat-fab svg{width:18px;height:18px;color:#fff}
+.chat-fab-label{position:absolute;bottom:calc(100% + 6px);right:0;background:var(--text);color:var(--bg);font-size:10px;padding:3px 8px;border-radius:5px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
+.chat-fab:hover .chat-fab-label{opacity:1}
 
-/* ─── CHAT PANEL ─── */
-.chat-panel{position:fixed;bottom:0;right:var(--sidebar-w);width:var(--chat-w);height:490px;background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:16px 16px 0 0;display:flex;flex-direction:column;z-index:99;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);box-shadow:0 -4px 32px rgba(0,0,0,.14)}
+/* CHAT PANEL */
+.chat-panel{position:fixed;bottom:0;right:var(--sidebar-w);width:var(--chat-w);height:460px;background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:16px 16px 0 0;display:flex;flex-direction:column;z-index:99;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);box-shadow:0 -4px 32px rgba(0,0,0,.14)}
 .chat-panel.open{transform:translateY(0)}
-.chat-header{display:flex;align-items:center;gap:9px;padding:.8rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0}
-.chat-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.chat-avatar svg{width:14px;height:14px;color:var(--accent)}
+.chat-header{display:flex;align-items:center;gap:9px;padding:.75rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.chat-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-avatar svg{width:13px;height:13px;color:var(--accent)}
 .chat-hinfo{flex:1}
 .chat-hinfo h4{font-size:13px;font-weight:500}
 .chat-hinfo p{font-size:10px;color:var(--text3)}
-.chat-close-btn{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:5px;display:flex;align-items:center;transition:background .12s}
+.chat-close-btn{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:5px;display:flex;transition:background .12s}
 .chat-close-btn:hover{background:var(--surface2);color:var(--text)}
 .chat-close-btn svg{width:14px;height:14px}
-.chat-messages{flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.6rem}
+.chat-messages{flex:1;overflow-y:auto;padding:.6rem;display:flex;flex-direction:column;gap:.5rem}
 .chat-messages::-webkit-scrollbar{width:3px}
 .chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
-.msg{max-width:90%;display:flex;flex-direction:column;gap:2px;animation:msgIn .2s ease}
-@keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.msg{max-width:90%;display:flex;flex-direction:column;gap:2px;animation:msgIn .18s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .msg.user{align-self:flex-end}
 .msg.ai{align-self:flex-start}
-.msg-bubble{padding:.55rem .85rem;border-radius:12px;font-size:12px;line-height:1.6}
+.msg-bubble{padding:.5rem .8rem;border-radius:12px;font-size:12px;line-height:1.6}
 .msg.user .msg-bubble{background:var(--accent);color:#fff;border-radius:12px 12px 3px 12px}
 .msg.ai .msg-bubble{background:var(--surface2);color:var(--text);border-radius:12px 12px 12px 3px;border:1px solid var(--border)}
 .msg-time{font-size:9px;color:var(--text3);padding:0 4px}
 .msg.user .msg-time{text-align:right}
-.suggestions{display:flex;flex-wrap:wrap;gap:5px;padding:.4rem .75rem .5rem}
+.suggestions{display:flex;flex-wrap:wrap;gap:5px;padding:.35rem .6rem .45rem}
 .chip{font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:99px;cursor:pointer;color:var(--text2);background:var(--surface);transition:all .12s;white-space:nowrap}
 .chip:hover{background:var(--accent-light);color:var(--accent);border-color:var(--accent)}
-.chat-input-row{display:flex;gap:6px;padding:.6rem .75rem .8rem;border-top:1px solid var(--border);align-items:flex-end}
-.chat-textarea{flex:1;padding:7px 10px;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);outline:none;resize:none;max-height:80px;line-height:1.4;transition:border-color .15s}
+.chat-input-row{display:flex;gap:6px;padding:.5rem .6rem .7rem;border-top:1px solid var(--border);align-items:flex-end}
+.chat-textarea{flex:1;padding:7px 10px;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);outline:none;resize:none;max-height:70px;line-height:1.4;transition:border-color .15s}
 .chat-textarea::placeholder{color:var(--text3)}
 .chat-textarea:focus{border-color:var(--accent)}
-.send-btn{width:34px;height:34px;border-radius:7px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+.send-btn{width:32px;height:32px;border-radius:7px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
 .send-btn:hover{opacity:.85}
 .send-btn:disabled{opacity:.35;cursor:not-allowed}
 .send-btn svg{width:13px;height:13px;color:#fff}
-.typing-wrap{display:flex;gap:3px;align-items:center;padding:.45rem .85rem}
+.typing-wrap{display:flex;gap:3px;align-items:center;padding:.4rem .8rem}
 .typing-dot{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:tdot 1.2s infinite}
 .typing-dot:nth-child(2){animation-delay:.2s}
 .typing-dot:nth-child(3){animation-delay:.4s}
 @keyframes tdot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
 
 /* API KEY MODAL */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .overlay.hidden{display:none}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.2)}
 .modal h3{font-family:'DM Serif Display',serif;font-size:21px;margin-bottom:.3rem}
-.modal p{font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.7}
+.modal-steps{margin:.85rem 0;padding:.85rem 1rem;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.9}
+.modal-steps strong{color:var(--text);font-weight:500}
 .modal-input{width:100%;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);outline:none;margin-bottom:.75rem;transition:border-color .15s}
 .modal-input:focus{border-color:var(--accent)}
 .modal-input::placeholder{color:var(--text3)}
@@ -178,6 +211,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .btn-ghost{padding:9px 14px;font-size:13px;font-family:'DM Sans',sans-serif;background:none;border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text2);transition:background .15s}
 .btn-ghost:hover{background:var(--surface2)}
 .modal-note{font-size:10px;color:var(--text3);margin-top:.75rem;line-height:1.6}
+.key-error{display:none;font-size:11px;color:var(--accent);margin-bottom:.5rem;padding:.4rem .6rem;background:var(--accent-light);border-radius:6px}
+.key-error.show{display:block}
 </style>
 </head>
 <body>
@@ -186,13 +221,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 <div class="overlay" id="apiModal">
   <div class="modal">
     <h3>Enter your Gemini API Key</h3>
-    <p>Your key stays in this browser tab only — never saved anywhere. Get a free key at <strong>aistudio.google.com</strong> → Get API Key → Create API Key.</p>
-    <input class="modal-input" id="apiKeyInput" type="password" placeholder="AIzaSy... paste your key here"/>
+    <div class="modal-steps">
+      <strong>Get a free key in 1 minute:</strong><br/>
+      1. Go to <strong>aistudio.google.com</strong><br/>
+      2. Click <strong>Get API Key → Create API Key</strong><br/>
+      3. Select any project → Copy the key<br/>
+      4. Paste it below — it's saved automatically ✓
+    </div>
+    <div class="key-error" id="keyError"></div>
+    <input class="modal-input" id="apiKeyInput" type="password" placeholder="AIzaSy... paste your full key here"/>
     <div class="modal-btns">
       <button class="btn-primary" onclick="saveApiKey()">Save & Continue</button>
-      <button class="btn-ghost" onclick="skipApiKey()">Skip for now</button>
+      <button class="btn-ghost" onclick="skipApiKey()">Skip</button>
     </div>
-    <p class="modal-note">⚠️ For personal local use only. Don't share this HTML file publicly with your key inside.</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.75rem">
+      <p class="modal-note" style="margin:0">🔒 Saved in your browser only — never in the file, safe for GitHub.</p>
+      <button onclick="clearSavedKey()" style="background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline;flex-shrink:0;margin-left:8px">Clear saved key</button>
+    </div>
   </div>
 </div>
 
@@ -201,6 +246,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   <span class="brand"><span class="brand-dot"></span>ReadPDF</span>
   <span class="topbar-file" id="topbarFile">No file loaded</span>
   <span class="ai-badge" id="aiBadge">✦ Gemini AI</span>
+
+  <!-- Thumbnail toggle -->
+  <button class="icon-btn active" id="thumbToggleBtn" onclick="toggleThumbs()" title="Toggle page thumbnails">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Pages
+  </button>
 
   <div class="zoom-controls" id="zoomControls" style="display:none">
     <button class="icon-btn" onclick="changeZoom(-0.15)">
@@ -214,27 +265,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
   <button class="icon-btn" onclick="triggerUpload()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-    Open PDF
+    Open
   </button>
   <button class="icon-btn" onclick="document.getElementById('apiModal').classList.remove('hidden')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    API Key
+    Key
   </button>
   <button class="icon-btn" onclick="toggleTheme()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
   </button>
 </div>
 
-<!-- READING PROGRESS -->
 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
-<!-- MAIN -->
 <div class="main">
 
-  <!-- PDF PANEL -->
-  <div class="pdf-panel" id="pdfPanel">
+  <!-- THUMBNAIL STRIP -->
+  <div class="thumb-panel" id="thumbPanel"></div>
 
-    <!-- Upload overlay (hides once PDF is loaded) -->
+  <!-- PDF VIEWER -->
+  <div class="pdf-panel" id="pdfPanel">
     <div class="upload-overlay" id="uploadOverlay">
       <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
         <div class="dz-icon">
@@ -246,28 +296,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
           </svg>
         </div>
         <h2>Drop your PDF here</h2>
-        <p>or click to browse<br/>Gemini AI extracts chapters automatically</p>
+        <p>or click to browse<br/>Chapters detected from index · AI synopsis per chapter</p>
         <input type="file" id="fileInput" accept=".pdf"/>
       </div>
     </div>
-
-    <!-- Loading overlay -->
     <div class="loading-overlay" id="loadingOverlay">
       <div class="spinner"></div>
       <span id="loadingMsg">Reading PDF…</span>
       <span class="load-sub" id="loadingSub">Please wait</span>
     </div>
-
-    <!-- Pages render here — always present, just empty until PDF loads -->
     <div class="pages-container" id="pagesContainer"></div>
-
   </div>
 
-  <!-- SIDEBAR -->
+  <!-- CHAPTER SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-head">
       <div class="sidebar-head-row">
-        <h3>Chapters</h3>
+        <h3>Chapters <span class="src-badge" id="srcBadge" style="display:none"></span></h3>
         <span class="chapter-count" id="chapterCount">—</span>
       </div>
       <div class="search-wrap">
@@ -276,7 +321,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       </div>
     </div>
     <div class="chapter-list" id="chapterList">
-      <div class="no-chapters">Upload a PDF and Gemini AI<br/>will detect all chapters automatically</div>
+      <div class="no-chapters">Upload a PDF — chapters will appear here.<br/>Hover any chapter for an AI synopsis.</div>
     </div>
     <div class="sidebar-footer">
       <div class="stat-row">
@@ -292,14 +337,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   </div>
 </div>
 
-<!-- CHAT FAB -->
-<button class="chat-fab" onclick="toggleChat()" title="Ask AI Assistant">
+<!-- AI CHAT FAB -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Ask AI about this PDF">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
   </svg>
+  <span class="chat-fab-label">Ask AI</span>
 </button>
 
-<!-- CHAT PANEL -->
+<!-- AI CHAT PANEL -->
 <div class="chat-panel" id="chatPanel">
   <div class="chat-header">
     <div class="chat-avatar">
@@ -307,7 +353,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
     </div>
     <div class="chat-hinfo">
       <h4>PDF Assistant</h4>
-      <p>Powered by Gemini AI · Ask anything about your PDF</p>
+      <p>Ask anything about your PDF · Powered by Gemini</p>
     </div>
     <button class="chat-close-btn" onclick="toggleChat()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -315,20 +361,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   </div>
   <div class="chat-messages" id="chatMessages">
     <div class="msg ai">
-      <div class="msg-bubble">Hi! Upload a PDF and I can summarize chapters, answer questions, explain concepts, and more. 📄</div>
+      <div class="msg-bubble">Hi! I can answer questions about your PDF using the chapter text. Try asking about a specific chapter or topic. 📖</div>
       <span class="msg-time">Now</span>
     </div>
   </div>
   <div class="suggestions" id="suggestionsRow">
-    <div class="chip" onclick="useSuggestion(this)">Summarize this PDF</div>
-    <div class="chip" onclick="useSuggestion(this)">List all key topics</div>
-    <div class="chip" onclick="useSuggestion(this)">What is chapter 1 about?</div>
-    <div class="chip" onclick="useSuggestion(this)">Explain the main argument</div>
+    <div class="chip" onclick="useSuggestion(this)">What is this book about?</div>
+    <div class="chip" onclick="useSuggestion(this)">Summarize chapter 1</div>
+    <div class="chip" onclick="useSuggestion(this)">List the main topics</div>
   </div>
   <div class="chat-input-row">
-    <textarea class="chat-textarea" id="chatInput" placeholder="Ask something about your PDF…" rows="1"
-      onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+    <textarea class="chat-textarea" id="chatInput" placeholder="Ask about your PDF…" rows="1"
+      onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendChatMessage()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
@@ -337,43 +382,336 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-/* ── PASTE YOUR GEMINI KEY HERE (optional — modal will ask on load) ── */
 let GEMINI_KEY = '';
-/* ─────────────────────────────────────────────────────────────────── */
-
-const GEMINI_URL = () =>
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
-
 let pdfDoc = null, totalPages = 0, scale = 1.4;
 let allChapters = [], chapters = [], currentPage = 1;
-let pdfBase64 = null, chatOpen = false;
+let pageTexts = [];       // per-page extracted text — for synopsis & chat
+let thumbsVisible = true;
+let chatOpen = false;
+let synopsisCache = {};
+const THUMB_SCALE = 0.18;
 
-/* ── API KEY ── */
+/* ══════════════════════════════════════════
+   GEMINI SETUP
+   Model: gemini-1.5-flash-8b
+     → Free tier: 15 RPM, 1M TPM (much more generous)
+     → Fast, great for summarization
+   Queue: ensures only 1 request runs at a time
+          + 4s gap between requests to stay safe
+   ══════════════════════════════════════════ */
+const GEMINI_MODEL = 'gemini-1.5-flash';
+let _geminiQueue = Promise.resolve();
+let _lastCallTime = 0;
+const MIN_GAP_MS = 4500; // 4.5s between calls = max ~13 RPM safely
+
+async function callGemini(prompt, maxTokens = 400, temp = 0.3) {
+  if (!GEMINI_KEY) throw new Error('NO_KEY');
+
+  // Queue: wait for previous call to finish, then enforce minimum gap
+  _geminiQueue = _geminiQueue.then(async () => {
+    const elapsed = Date.now() - _lastCallTime;
+    if (_lastCallTime && elapsed < MIN_GAP_MS) {
+      await new Promise(r => setTimeout(r, MIN_GAP_MS - elapsed));
+    }
+  });
+  await _geminiQueue;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
+
+  let lastErr;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) {
+      const wait = [0, 15, 30, 60][attempt];
+      dispatchRetry(wait, attempt);
+      await new Promise(r => setTimeout(r, wait * 1000));
+    }
+    try {
+      _lastCallTime = Date.now();
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: temp, maxOutputTokens: maxTokens }
+        })
+      });
+      if (res.status === 429) {
+        lastErr = new Error('RATE_LIMIT');
+        continue; // retry
+      }
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e?.error?.message || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error('Empty response');
+      return text;
+    } catch(e) {
+      if (e.message === 'RATE_LIMIT') { lastErr = e; continue; }
+      throw e;
+    }
+  }
+  throw lastErr || new Error('Max retries exceeded');
+}
+
+let _retryListeners = [];
+function dispatchRetry(secs, attempt) {
+  _retryListeners.forEach(fn => fn(secs, attempt));
+}
+
+/* ══════════════════════════════════════════
+   CHAPTER DETECTION — index-first approach
+   Priority: 1) PDF outline  2) TOC page scan
+             3) AI (only first 15 pages)
+             4) Regex text scan (free)
+   ══════════════════════════════════════════ */
+async function detectChapters() {
+  // ── 1. PDF built-in outline (bookmarks) — FREE, instant ──
+  try {
+    const outline = await pdfDoc.getOutline();
+    if (outline && outline.length >= 2) {
+      const results = await parseOutline(outline);
+      if (results.length >= 2) {
+        setBadge('outline', '● Built-in index');
+        return results;
+      }
+    }
+  } catch(e) {}
+
+  // ── 2. Scan first 15 pages for a TOC / Index page — FREE ──
+  const tocResult = await scanTOCPages();
+  if (tocResult.length >= 2) {
+    setBadge('toc', '● TOC detected');
+    return tocResult;
+  }
+
+  // ── 3. Gemini on first 10 pages only — minimal tokens ──
+  if (GEMINI_KEY) {
+    try {
+      const result = await extractChaptersAI();
+      if (result.length >= 2) {
+        setBadge('ai', '✦ AI detected');
+        return result;
+      }
+    } catch(e) { console.warn('AI chapter detection failed:', e.message); }
+  }
+
+  // ── 4. Regex scan — FREE fallback ──
+  const regexResult = regexScanChapters();
+  setBadge('scan', '○ Text scan');
+  return regexResult;
+}
+
+async function parseOutline(outline) {
+  const results = [];
+  for (const item of outline) {
+    if (!item.dest && !item.url) continue;
+    let pn = 1;
+    try {
+      let d = item.dest;
+      if (typeof d === 'string') d = await pdfDoc.getDestination(d);
+      if (d) pn = await pdfDoc.getPageIndex(d[0]) + 1;
+    } catch(e) {}
+    const children = [];
+    for (const sub of (item.items || []).slice(0, 5)) {
+      let sp = pn;
+      try {
+        let d = sub.dest;
+        if (typeof d === 'string') d = await pdfDoc.getDestination(d);
+        if (d) sp = await pdfDoc.getPageIndex(d[0]) + 1;
+      } catch(e) {}
+      children.push({ title: sub.title, page: sp });
+    }
+    results.push({ title: item.title, page: pn, children });
+  }
+  return results;
+}
+
+async function scanTOCPages() {
+  // Look for a page that looks like a Table of Contents
+  // Pattern: lines ending with numbers (page refs)
+  const tocRe = /(.{3,60})\s+\.{2,}\s*(\d+)$|(.{3,60})\s{3,}(\d+)$/;
+  const chapterRe = /^(chapter|part|unit|section)\s+[\divxlc]+/i;
+
+  const chapters = [];
+  const scanPages = Math.min(pageTexts.length, 15);
+
+  for (let i = 0; i < scanPages; i++) {
+    const lines = pageTexts[i].text.split('\n');
+    let tocLines = 0;
+    const found = [];
+
+    for (const line of lines) {
+      const t = line.trim();
+      const m = t.match(tocRe);
+      if (m) {
+        tocLines++;
+        const title = (m[1] || m[3]).trim();
+        const page = parseInt(m[2] || m[4]);
+        if (title.length > 2 && page > 0 && page <= totalPages)
+          found.push({ title, page, children: [] });
+      }
+    }
+    // If a page has 3+ TOC-style lines, it's an index page
+    if (tocLines >= 3 && found.length >= 3) return found;
+  }
+
+  // Also try chapter heading pattern across first 15 pages
+  const headings = [];
+  for (let i = 0; i < scanPages; i++) {
+    for (const line of pageTexts[i].text.split('\n')) {
+      const t = line.trim();
+      if (chapterRe.test(t) && t.length < 100)
+        headings.push({ title: t, page: i + 1, children: [] });
+    }
+  }
+  return headings.length >= 2 ? headings : [];
+}
+
+async function extractChaptersAI() {
+  // Only send first 10 pages — ~3000 chars max, very low token cost
+  let sample = '';
+  for (const pt of pageTexts.slice(0, 10)) {
+    sample += `\n--- PAGE ${pt.page} ---\n${pt.text.slice(0, 600)}`;
+  }
+
+  const prompt = `Analyze this PDF text (first 10 pages only) and find ALL chapters/sections.
+
+Look for: chapter headings, TOC entries, numbered sections, part titles.
+"--- PAGE N ---" marks the actual page number.
+
+Return ONLY raw JSON array, no markdown:
+[{"title":"Chapter 1: Intro","page":1,"children":[]},{"title":"Chapter 2","page":15,"children":[]}]
+
+If you see a Table of Contents page, extract ALL entries from it including page numbers.
+TEXT:
+${sample}`;
+
+  const raw = await callGemini(prompt, 800, 0.05);
+  const clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+  return JSON.parse(clean);
+}
+
+function regexScanChapters() {
+  const chapRe = /^(chapter\s+[\divxlcIVXLC]+|part\s+[\divxlcIVXLC]+|unit\s+\d+|section\s+\d+|\d{1,2}[\.\:]\s+[A-Z])/i;
+  const scanned = [];
+  for (const { page, text } of pageTexts) {
+    for (const line of text.split('\n')) {
+      const t = line.trim();
+      if (t.length < 2 || t.length > 120) continue;
+      if (chapRe.test(t) && !scanned.find(s => s.page === page && s.title === t))
+        scanned.push({ title: t, page, children: [] });
+    }
+  }
+  const seen = new Set();
+  return scanned.filter(c => {
+    const k = c.page + '|' + c.title;
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  }).slice(0, 80);
+}
+
+function setBadge(type, label) {
+  const b = document.getElementById('srcBadge');
+  b.className = 'src-badge ' + type;
+  b.textContent = label;
+  b.style.display = 'inline';
+}
+
+/* ══════════════════════════════════════════
+   SYNOPSIS — only sends 1 chapter's text
+   ══════════════════════════════════════════ */
+function getChapterText(idx) {
+  const ch = allChapters[idx];
+  const next = allChapters[idx + 1];
+  const start = ch.page - 1;
+  const end = next ? Math.min(next.page - 2, start + 18) : Math.min(start + 18, pageTexts.length - 1);
+  let text = '';
+  for (let i = start; i <= end && i < pageTexts.length; i++) {
+    text += pageTexts[i].text + '\n';
+  }
+  return text.slice(0, 3500);
+}
+
+async function generateSynopsis(idx) {
+  const ch = allChapters[idx];
+  const text = getChapterText(idx);
+  if (!text.trim()) return 'No readable text found for this chapter.';
+  const prompt = `Summarize this chapter in 3 sentences max.
+Chapter: "${ch.title}"
+What happens, key ideas, significance. Present tense, no preamble.
+Text: ${text.slice(0, 2000)}`;
+  return callGemini(prompt, 180, 0.4);
+}
+
+/* ══════════════════════════════════════════
+   CHAT — uses chapter list as context,
+   asks about specific chapters on demand
+   ══════════════════════════════════════════ */
+function getChatContext(question) {
+  // Build a light context: chapter list + current chapter text only
+  const chapterIndex = allChapters.map((c,i) => `${i+1}. ${c.title} (p.${c.page})`).join('\n');
+  const curChIdx = allChapters.reduce((acc, c, i) => c.page <= currentPage ? i : acc, 0);
+  const curText = allChapters.length ? getChapterText(curChIdx).slice(0, 2000) : '';
+  return { chapterIndex, curText, curChIdx };
+}
+
+/* ═══════════ API KEY — persisted in localStorage ═══════════ */
+function loadSavedKey() {
+  try {
+    const saved = localStorage.getItem('readpdf_gemini_key');
+    if (saved && saved.startsWith('AIza')) {
+      GEMINI_KEY = saved;
+      document.getElementById('aiBadge').textContent = '✦ Gemini Ready';
+      document.getElementById('apiModal').classList.add('hidden');
+      document.getElementById('apiKeyInput').value = saved;
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
 function saveApiKey() {
   const k = document.getElementById('apiKeyInput').value.trim();
-  if (!k) { alert('Please paste your Gemini API key.'); return; }
+  const err = document.getElementById('keyError');
+  if (!k) { err.textContent = 'Please paste your key.'; err.classList.add('show'); return; }
+  if (!k.startsWith('AIza')) { err.textContent = 'Invalid — Gemini keys start with "AIza"'; err.classList.add('show'); return; }
+  err.classList.remove('show');
   GEMINI_KEY = k;
+  try { localStorage.setItem('readpdf_gemini_key', k); } catch(e) {}
   document.getElementById('apiModal').classList.add('hidden');
   document.getElementById('aiBadge').textContent = '✦ Gemini Ready';
 }
+
 function skipApiKey() {
   document.getElementById('apiModal').classList.add('hidden');
-  document.getElementById('aiBadge').textContent = '✦ No API Key';
+  document.getElementById('aiBadge').textContent = '✦ No Key';
 }
 
-/* ── THEME ── */
+function clearSavedKey() {
+  try { localStorage.removeItem('readpdf_gemini_key'); } catch(e) {}
+  GEMINI_KEY = '';
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('aiBadge').textContent = '✦ Gemini AI';
+  document.getElementById('keyError').textContent = 'Key cleared. Paste a new one below.';
+  document.getElementById('keyError').classList.add('show');
+}
+
+// Auto-load key when page opens
+loadSavedKey();
+
+/* ═══════════ THEME ═══════════ */
 function toggleTheme() {
   const h = document.documentElement;
   h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
 }
 
-/* ── UPLOAD ── */
+/* ═══════════ UPLOAD ═══════════ */
 function triggerUpload() { document.getElementById('fileInput').click(); }
-
 document.getElementById('fileInput').addEventListener('change', e => {
   if (e.target.files[0]) loadPDF(e.target.files[0]);
 });
-
 const dz = document.getElementById('dropZone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('over'));
@@ -384,343 +722,307 @@ dz.addEventListener('drop', e => {
   else alert('Please drop a PDF file.');
 });
 
-function fileToBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result.split(',')[1]);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
-}
-
-/* ── LOAD PDF ── */
+/* ═══════════ LOAD PDF ═══════════ */
 async function loadPDF(file) {
-  // 1. Hide upload overlay, show loading overlay
   document.getElementById('uploadOverlay').classList.add('hidden');
-  showLoading('Reading PDF…', 'Loading your document…');
-
+  setLoading(true, 'Reading PDF…', 'Loading document…');
   document.getElementById('topbarFile').textContent = file.name;
   document.getElementById('zoomControls').style.display = 'flex';
+  synopsisCache = {};
 
-  // 2. Load PDF.js document
   const buf = await file.arrayBuffer();
   pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
   totalPages = pdfDoc.numPages;
   document.getElementById('pageInfo').textContent = '1 / ' + totalPages;
 
-  // 3. Render all pages FIRST — so PDF is visible immediately
-  showLoading('Rendering pages…', `Loading ${totalPages} pages…`);
+  // 1. Render main pages
+  setLoading(true, 'Rendering pages…', `${totalPages} pages`);
   await renderAllPages();
+  setLoading(false);
 
-  // 4. Hide loading overlay — PDF is now visible
-  hideLoading();
+  // 2. Extract text (needed for synopsis + chat + chapter scan)
+  setLoading(true, 'Reading text…', 'Scanning all pages…');
+  await extractAllText();
+  setLoading(false);
 
-  // 5. Extract chapters in background (convert to base64 + call Gemini)
-  showChapterLoading();
-  pdfBase64 = await fileToBase64(file);
+  // 3. Render thumbnails in background
+  renderThumbnails();
 
-  let extracted = [];
-  if (GEMINI_KEY) {
-    extracted = await extractWithGemini(file, pdfBase64);
-  }
-  // Always fallback if Gemini returns nothing
-  if (!extracted || extracted.length === 0) {
-    extracted = await extractFallback(pdfDoc);
-  }
-
+  // 4. Detect chapters
+  showSidebarSpinner('Finding chapters…');
+  const extracted = await detectChapters();
   allChapters = extracted;
-  chapters = extracted;
+  chapters = [...extracted];
   renderChapterList(chapters);
   document.getElementById('chapterCount').textContent = chapters.length + ' found';
-
-  // 6. Setup scroll tracking after everything is ready
   setupScroll();
 }
 
-function showLoading(msg, sub) {
-  const el = document.getElementById('loadingOverlay');
-  el.classList.add('show');
-  document.getElementById('loadingMsg').textContent = msg;
-  document.getElementById('loadingSub').textContent = sub;
-}
-function hideLoading() {
-  document.getElementById('loadingOverlay').classList.remove('show');
-}
-function showChapterLoading() {
-  document.getElementById('chapterList').innerHTML =
-    `<div class="no-chapters" style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding-top:2rem">
-      <div class="spinner" style="width:20px;height:20px;border-width:1.5px"></div>
-      <span>${GEMINI_KEY ? 'Gemini is reading chapters…' : 'Scanning for chapters…'}</span>
-    </div>`;
-  document.getElementById('chapterCount').textContent = '…';
-}
-
-/* ── RENDER ALL PAGES ── */
-async function renderAllPages() {
-  const container = document.getElementById('pagesContainer');
-  container.innerHTML = ''; // clear old pages
-
-  // Render pages in batches to avoid blocking
-  const batchSize = 5;
-  for (let i = 1; i <= totalPages; i++) {
-    const wrap = document.createElement('div');
-    wrap.className = 'page-wrap';
-    wrap.id = 'page-' + i;
-    wrap.dataset.page = i;
-
-    const canvas = document.createElement('canvas');
-    const lbl = document.createElement('div');
-    lbl.className = 'page-label';
-    lbl.textContent = i + ' / ' + totalPages;
-
-    wrap.appendChild(canvas);
-    wrap.appendChild(lbl);
-    container.appendChild(wrap);
-
-    // Render immediately for first batch, defer rest
-    if (i <= batchSize) {
-      await renderPage(i, canvas);
-    } else {
-      // Lazy render remaining pages
-      renderPage(i, canvas);
-    }
-  }
-}
-
-async function renderPage(num, canvas) {
-  try {
-    const page = await pdfDoc.getPage(num);
-    const vp = page.getViewport({ scale });
-    canvas.width = vp.width;
-    canvas.height = vp.height;
-    const ctx = canvas.getContext('2d');
-    await page.render({ canvasContext: ctx, viewport: vp }).promise;
-  } catch(e) {
-    console.warn('Page render error page', num, e);
-  }
-}
-
-/* ── GEMINI CHAPTER EXTRACTION ──
-   Smart prompt that works even with NO table of contents.
-   Gemini reads the raw PDF text and identifies chapter headings by their
-   visual position, font size, numbering patterns, and content structure.
-*/
-async function extractWithGemini(file, base64) {
-  try {
-    if (file.size > 19 * 1024 * 1024) {
-      console.warn('PDF too large for Gemini inline, using fallback');
-      return [];
-    }
-
-    const res = await fetch(GEMINI_URL(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { inline_data: { mime_type: 'application/pdf', data: base64 } },
-            { text: `You are an expert at reading and analyzing PDF books and textbooks.
-
-Your task: Find ALL chapters and major sections in this PDF, even if there is NO table of contents page.
-
-HOW TO FIND CHAPTERS (even without a TOC):
-1. Look for pages where a heading appears prominently at the top, like:
-   - "Chapter 1", "Chapter One", "CHAPTER 1"
-   - "1. Title", "UNIT 1", "Part One", "Section 1"
-   - A large bold title that starts a new major topic
-2. Look for numbered section headings throughout the document
-3. Look for pages that clearly begin a new major topic
-4. Check if page numbers reset or if headers/footers change chapter names
-5. Look at the very beginning for a table of contents if it exists
-
-IMPORTANT RULES:
-- Return ONLY raw JSON. No markdown. No explanation. No code fences.
-- "page" must be the EXACT page number in this PDF where that chapter/section STARTS
-- Include subsections inside "children" array (max 5 per chapter)
-- If no subsections found, use empty array []
-- Extract ALL chapters you can find — be thorough
-- For books without TOC, scan the ENTIRE document
-
-JSON format to return:
-[
-  {
-    "title": "Chapter 1: Introduction to Physics",
-    "page": 12,
-    "children": [
-      { "title": "1.1 What is Physics?", "page": 13 },
-      { "title": "1.2 Units and Measurement", "page": 17 }
-    ]
-  },
-  {
-    "title": "Chapter 2: Motion",
-    "page": 28,
-    "children": []
-  }
-]` }
-          ]
-        }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 3000 }
-      })
-    });
-
-    const data = await res.json();
-    if (!data.candidates?.[0]) return [];
-
-    let text = data.candidates[0].content.parts[0].text.trim();
-    // Strip any accidental markdown fences
-    text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-
-    const parsed = JSON.parse(text);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch(e) {
-    console.error('Gemini extraction failed:', e);
-    return [];
-  }
-}
-
-/* ── FALLBACK: PDF outline + text scan ── */
-async function extractFallback(pdf) {
-  // Try built-in PDF outline/bookmarks first
-  try {
-    const outline = await pdf.getOutline();
-    if (outline?.length >= 2) {
-      const results = [];
-      for (const item of outline) {
-        if (!item.dest && !item.url) continue;
-        let pageNum = 1;
-        try {
-          let d = item.dest;
-          if (typeof d === 'string') d = await pdf.getDestination(d);
-          if (d) pageNum = await pdf.getPageIndex(d[0]) + 1;
-        } catch(e) {}
-        const children = [];
-        for (const sub of (item.items || []).slice(0, 5)) {
-          let sp = pageNum;
-          try {
-            let d = sub.dest;
-            if (typeof d === 'string') d = await pdf.getDestination(d);
-            if (d) sp = await pdf.getPageIndex(d[0]) + 1;
-          } catch(e) {}
-          children.push({ title: sub.title, page: sp });
-        }
-        results.push({ title: item.title, page: pageNum, children });
-      }
-      if (results.length >= 2) return results;
-    }
-  } catch(e) {}
-
-  // Text scan heuristic
-  const chapRe = /^(chapter\s+[\divxlcIVXLC]+|part\s+[\divxlcIVXLC]+|\d{1,2}[\.\:\s]\s+[A-Z]|unit\s+\d+|section\s+\d+)/i;
-  const scanned = [];
-
-  for (let i = 1; i <= Math.min(pdf.numPages, 100); i++) {
-    const page = await pdf.getPage(i);
+async function extractAllText() {
+  pageTexts = [];
+  for (let i = 1; i <= pdfDoc.numPages; i++) {
+    const page = await pdfDoc.getPage(i);
     const tc = await page.getTextContent();
-
-    // Group text items into lines by Y position
     const lineMap = {};
     for (const item of tc.items) {
       if (!item.str.trim()) continue;
       const y = Math.round(item.transform[5]);
-      if (!lineMap[y]) lineMap[y] = { text: '', size: item.height || 12 };
-      lineMap[y].text += item.str;
-      lineMap[y].size = Math.max(lineMap[y].size, item.height || 12);
+      if (!lineMap[y]) lineMap[y] = '';
+      lineMap[y] += item.str;
     }
-
-    const lines = Object.values(lineMap).filter(l => l.text.trim().length > 1);
-
-    for (const line of lines) {
-      const t = line.text.trim();
-      if (t.length < 2 || t.length > 150) continue;
-      // Match chapter patterns OR large font headings at start of text
-      if (chapRe.test(t) || (line.size >= 14 && /^[A-Z0-9][^.!?,;]{2,70}$/.test(t))) {
-        if (!scanned.find(s => s.page === i && s.title === t)) {
-          scanned.push({ title: t, page: i, children: [] });
-        }
-      }
-    }
+    pageTexts.push({ page: i, text: Object.values(lineMap).join('\n') });
   }
-
-  // Deduplicate and limit
-  const seen = new Set();
-  const deduped = scanned.filter(c => {
-    const key = c.page + '|' + c.title;
-    if (seen.has(key)) return false;
-    seen.add(key); return true;
-  });
-
-  return deduped.slice(0, 80);
 }
 
-/* ── RENDER CHAPTER LIST ── */
+/* ═══════════ RENDER PAGES ═══════════ */
+async function renderAllPages() {
+  const container = document.getElementById('pagesContainer');
+  container.innerHTML = '';
+  for (let i = 1; i <= totalPages; i++) {
+    const wrap = document.createElement('div');
+    wrap.className = 'page-wrap'; wrap.id = 'page-' + i; wrap.dataset.page = i;
+    const canvas = document.createElement('canvas');
+    const lbl = document.createElement('div');
+    lbl.className = 'page-label'; lbl.textContent = i + ' / ' + totalPages;
+    wrap.appendChild(canvas); wrap.appendChild(lbl);
+    container.appendChild(wrap);
+    if (i <= 5) await renderPage(i, canvas, scale);
+    else renderPage(i, canvas, scale);
+  }
+}
+
+async function renderPage(num, canvas, sc) {
+  try {
+    const page = await pdfDoc.getPage(num);
+    const vp = page.getViewport({ scale: sc });
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+  } catch(e) {}
+}
+
+/* ═══════════ THUMBNAILS ═══════════ */
+async function renderThumbnails() {
+  const panel = document.getElementById('thumbPanel');
+  panel.innerHTML = '';
+  for (let i = 1; i <= totalPages; i++) {
+    const item = document.createElement('div');
+    item.className = 'thumb-item'; item.id = 'thumb-' + i;
+    const canvas = document.createElement('canvas');
+    const lbl = document.createElement('div');
+    lbl.className = 'thumb-num'; lbl.textContent = i;
+    item.appendChild(canvas); item.appendChild(lbl);
+    item.onclick = () => goToPage(i);
+    panel.appendChild(item);
+    // Render thumbnails lazily with small delay
+    setTimeout(() => renderPage(i, canvas, THUMB_SCALE), i * 30);
+  }
+}
+
+function toggleThumbs() {
+  thumbsVisible = !thumbsVisible;
+  document.getElementById('thumbPanel').classList.toggle('hidden', !thumbsVisible);
+  document.getElementById('thumbToggleBtn').classList.toggle('active', thumbsVisible);
+}
+
+function updateThumbHighlight(page) {
+  document.querySelectorAll('.thumb-item').forEach(t => {
+    t.classList.toggle('active', parseInt(t.id.replace('thumb-','')) === page);
+  });
+  const active = document.getElementById('thumb-' + page);
+  if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ═══════════ CHAPTER LIST ═══════════ */
 function renderChapterList(list) {
   const el = document.getElementById('chapterList');
   if (!list.length) {
-    el.innerHTML = '<div class="no-chapters">No chapters found.<br/>Try a PDF with clearer chapter headings,<br/>or add your Gemini API key for better detection.</div>';
+    el.innerHTML = '<div class="no-chapters">No chapters found.<br/>Add API key for smarter detection.</div>';
     return;
   }
   el.innerHTML = list.map((ch, i) => {
-    const subs = (ch.children || []).slice(0, 5).map(s =>
+    const subs = (ch.children||[]).slice(0,4).map(s =>
       `<div class="ch-sub-item" onclick="event.stopPropagation();goToPage(${s.page})">
         <span style="opacity:.4;font-size:9px;flex-shrink:0">↳</span>
         <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(s.title)}</span>
-        <span style="color:var(--text3);flex-shrink:0;font-size:10px;margin-left:4px">p.${s.page}</span>
+        <span style="color:var(--text3);flex-shrink:0;margin-left:4px;font-size:10px">p.${s.page}</span>
       </div>`).join('');
+    const synBtn = GEMINI_KEY
+      ? `<button class="synopsis-btn" id="synbtn-${i}" onclick="event.stopPropagation();toggleSynopsis(${i})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          AI Synopsis
+        </button>` : '';
     return `<div class="chapter-item" id="ch-${i}" data-page="${ch.page}" onclick="goToPage(${ch.page})">
-      <span class="ch-num">${i + 1}</span>
+      <span class="ch-num">${i+1}</span>
       <div class="ch-body">
         <div class="ch-title" title="${esc(ch.title)}">${esc(ch.title)}</div>
         <div class="ch-page">Page ${ch.page}</div>
         ${subs ? `<div class="ch-sub">${subs}</div>` : ''}
+        ${synBtn}
       </div>
+    </div>
+    <div class="synopsis-card" id="syn-${i}">
+      <div class="syn-header">
+        <span class="syn-label">✦ AI Synopsis</span>
+        <button class="syn-close" onclick="closeSynopsis(${i})">×</button>
+      </div>
+      <div class="syn-text" id="syn-text-${i}"></div>
     </div>`;
   }).join('');
 }
 
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* ═══════════ SYNOPSIS ═══════════ */
+async function toggleSynopsis(idx) {
+  const card = document.getElementById(`syn-${idx}`);
+  const btn  = document.getElementById(`synbtn-${idx}`);
+  if (card.classList.contains('show')) {
+    card.classList.remove('show');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> AI Synopsis`;
+    return;
+  }
+  if (synopsisCache[idx]) {
+    document.getElementById(`syn-text-${idx}`).innerHTML = synopsisCache[idx];
+    card.classList.add('show');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Hide`;
+    return;
+  }
+
+  const synText = document.getElementById(`syn-text-${idx}`);
+  synText.innerHTML = `<div class="syn-spinner"><div class="mini-spinner"></div> Reading chapter…</div>`;
+  card.classList.add('show');
+  btn.classList.add('loading');
+  btn.innerHTML = `<div class="mini-spinner"></div> Loading…`;
+
+  // Register retry callback to show countdown
+  const retryFn = (secs, attempt) => {
+    synText.innerHTML = `<div class="syn-spinner"><div class="mini-spinner"></div> Rate limit — retrying in ${secs}s (attempt ${attempt}/3)…</div>`;
+  };
+  _retryListeners.push(retryFn);
+
+  try {
+    const synopsis = await generateSynopsis(idx);
+    const html = esc(synopsis).replace(/\n/g,'<br/>');
+    synopsisCache[idx] = html;
+    synText.innerHTML = html;
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Hide`;
+  } catch(e) {
+    synText.innerHTML = `<span style="color:var(--accent)">⚠️ ${esc(friendlyError(e.message))}</span>`;
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Retry`;
+  } finally {
+    _retryListeners = _retryListeners.filter(f => f !== retryFn);
+  }
 }
 
-/* ── SEARCH ── */
+function closeSynopsis(idx) {
+  document.getElementById(`syn-${idx}`).classList.remove('show');
+  const btn = document.getElementById(`synbtn-${idx}`);
+  if (btn) btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> AI Synopsis`;
+}
+
+/* ═══════════ CHAT ═══════════ */
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+  if (chatOpen) setTimeout(() => document.getElementById('chatInput').focus(), 300);
+}
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 70) + 'px';
+}
+function useSuggestion(el) {
+  document.getElementById('chatInput').value = el.textContent;
+  document.getElementById('suggestionsRow').style.display = 'none';
+  sendChatMessage();
+}
+
+async function sendChatMessage() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  if (!GEMINI_KEY) { addChatMsg('ai','⚠️ Add your Gemini API key first — click "Key" in the top bar.'); return; }
+
+  addChatMsg('user', text);
+  inp.value = ''; inp.style.height = 'auto';
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('suggestionsRow').style.display = 'none';
+  const tid = 'typing-' + Date.now();
+  addTyping(tid);
+
+  try {
+    const { chapterIndex, curText, curChIdx } = getChatContext(text);
+    const curChTitle = allChapters[curChIdx]?.title || 'unknown';
+    const prompt = `Reading assistant. PDF chapter list:
+${chapterIndex || 'None detected.'}
+User on page ${currentPage} ("${curChTitle}"). Current chapter excerpt:
+${curText.slice(0, 1200)}
+Answer concisely. User: ${text}`;
+
+    const reply = await callGemini(prompt, 250, 0.4);
+    removeEl(tid);
+    addChatMsg('ai', reply);
+  } catch(e) {
+    removeEl(tid);
+    addChatMsg('ai', '⚠️ ' + friendlyError(e.message));
+  }
+  document.getElementById('sendBtn').disabled = false;
+}
+
+function addChatMsg(role, text) {
+  const msgs = document.getElementById('chatMessages');
+  const time = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `<div class="msg-bubble">${esc(text).replace(/\n/g,'<br/>')}</div><span class="msg-time">${time}</span>`;
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+}
+function addTyping(id) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg ai'; div.id = id;
+  div.innerHTML = `<div class="msg-bubble"><div class="typing-wrap"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+}
+
+/* ═══════════ SEARCH ═══════════ */
 function filterChapters() {
   const q = document.getElementById('searchInput').value.toLowerCase().trim();
-  chapters = q
-    ? allChapters.filter(c => c.title.toLowerCase().includes(q) ||
-        (c.children || []).some(s => s.title.toLowerCase().includes(q)))
-    : allChapters;
+  chapters = q ? allChapters.filter(c =>
+    c.title.toLowerCase().includes(q) ||
+    (c.children||[]).some(s => s.title.toLowerCase().includes(q))
+  ) : allChapters;
   renderChapterList(chapters);
   document.getElementById('chapterCount').textContent = chapters.length + ' found';
 }
 
-/* ── SCROLL TRACKING ── */
+/* ═══════════ SCROLL ═══════════ */
 function setupScroll() {
   const panel = document.getElementById('pdfPanel');
   panel.removeEventListener('scroll', onScroll);
   panel.addEventListener('scroll', onScroll, { passive: true });
 }
-
 function onScroll() {
   const panel = document.getElementById('pdfPanel');
-  const st = panel.scrollTop;
-  const sh = panel.scrollHeight - panel.clientHeight;
+  const st = panel.scrollTop, sh = panel.scrollHeight - panel.clientHeight;
   const pct = sh > 0 ? Math.round((st / sh) * 100) : 0;
-
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('miniFill').style.width = pct + '%';
   document.getElementById('progressPct').textContent = pct + '%';
 
-  // Detect current page
   const pr = panel.getBoundingClientRect();
   let cur = 1;
   document.querySelectorAll('.page-wrap').forEach(w => {
-    const wr = w.getBoundingClientRect();
-    if (wr.top <= pr.top + pr.height * 0.5) cur = parseInt(w.dataset.page);
+    if (w.getBoundingClientRect().top <= pr.top + pr.height * 0.5)
+      cur = parseInt(w.dataset.page);
   });
-
   if (cur !== currentPage) {
     currentPage = cur;
     document.getElementById('pageInfo').textContent = cur + ' / ' + totalPages;
     highlightChapter(cur);
+    updateThumbHighlight(cur);
   }
 }
 
@@ -729,110 +1031,41 @@ function highlightChapter(page) {
   let idx = -1;
   allChapters.forEach((c, i) => { if (c.page <= page) idx = i; });
   items.forEach((el, i) => el.classList.toggle('active', i === idx));
-  if (idx >= 0 && items[idx]) {
-    items[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
+  if (idx >= 0 && items[idx]) items[idx].scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
-/* ── NAVIGATION ── */
 function goToPage(n) {
   const el = document.getElementById('page-' + n);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
-/* ── ZOOM ── */
+/* ═══════════ ZOOM ═══════════ */
 function changeZoom(d) {
   scale = Math.max(0.5, Math.min(3, scale + d));
   document.getElementById('zoomVal').textContent = Math.round(scale / 1.4 * 100) + '%';
   if (pdfDoc) renderAllPages();
 }
 
-/* ── CHAT ── */
-function toggleChat() {
-  chatOpen = !chatOpen;
-  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
-  if (chatOpen) setTimeout(() => document.getElementById('chatInput').focus(), 300);
+/* ═══════════ HELPERS ═══════════ */
+function setLoading(show, msg, sub) {
+  document.getElementById('loadingOverlay').classList.toggle('show', show);
+  if (msg) document.getElementById('loadingMsg').textContent = msg;
+  if (sub) document.getElementById('loadingSub').textContent = sub;
 }
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+function showSidebarSpinner(label) {
+  document.getElementById('chapterList').innerHTML =
+    `<div style="display:flex;flex-direction:column;align-items:center;gap:.6rem;padding:2rem 1rem;color:var(--text3);font-size:12px">
+      <div class="spinner" style="width:18px;height:18px;border-width:1.5px"></div><span>${label}</span></div>`;
+  document.getElementById('chapterCount').textContent = '…';
 }
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
+function friendlyError(msg) {
+  if (!msg || msg === 'NO_KEY') return 'No API key. Click "Key" in the top bar.';
+  if (msg.includes('API_KEY_INVALID') || msg.includes('not valid')) return 'Invalid API key. Click "Key" to update.';
+  if (msg.includes('429') || msg.includes('quota') || msg.includes('QUOTA') || msg.includes('RATE_LIMIT')) return 'Rate limit hit after 4 retries. Wait ~1 min then try again.';
+  if (msg.includes('PERMISSION_DENIED')) return 'Enable Gemini API in your Google Cloud project.';
+  return msg;
 }
-function useSuggestion(el) {
-  document.getElementById('chatInput').value = el.textContent;
-  document.getElementById('suggestionsRow').style.display = 'none';
-  sendMessage();
-}
-
-async function sendMessage() {
-  const inp = document.getElementById('chatInput');
-  const text = inp.value.trim();
-  if (!text) return;
-  if (!GEMINI_KEY) {
-    addMsg('ai', '⚠️ No API key set. Click the "API Key" button in the top bar to add your Gemini key.');
-    return;
-  }
-  addMsg('user', text);
-  inp.value = ''; inp.style.height = 'auto';
-  document.getElementById('sendBtn').disabled = true;
-  document.getElementById('suggestionsRow').style.display = 'none';
-
-  const tid = 'typing-' + Date.now();
-  addTyping(tid);
-
-  try {
-    const parts = [];
-    if (pdfBase64) {
-      parts.push({ inline_data: { mime_type: 'application/pdf', data: pdfBase64 } });
-      parts.push({ text: `You are a helpful PDF reading assistant. The user is currently reading the PDF above.\nAnswer clearly and concisely. Reference specific content, chapters, or page numbers when relevant.\n\nUser question: ${text}` });
-    } else {
-      parts.push({ text: `The user hasn't uploaded a PDF yet. Let them know politely.\n\nUser: ${text}` });
-    }
-
-    const res = await fetch(GEMINI_URL(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 1024 }
-      })
-    });
-    const data = await res.json();
-    removeEl(tid);
-
-    if (data.candidates?.[0]) {
-      addMsg('ai', data.candidates[0].content.parts[0].text);
-    } else {
-      addMsg('ai', 'Something went wrong. Please check your API key and try again.');
-    }
-  } catch(e) {
-    removeEl(tid);
-    addMsg('ai', 'Network error. Please check your internet connection and API key.');
-  }
-  document.getElementById('sendBtn').disabled = false;
-}
-
-function addMsg(role, text) {
-  const msgs = document.getElementById('chatMessages');
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const div = document.createElement('div');
-  div.className = 'msg ' + role;
-  div.innerHTML = `<div class="msg-bubble">${esc(text).replace(/\n/g, '<br/>')}</div><span class="msg-time">${time}</span>`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function addTyping(id) {
-  const msgs = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = 'msg ai'; div.id = id;
-  div.innerHTML = `<div class="msg-bubble"><div class="typing-wrap"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function removeEl(id) { document.getElementById(id)?.remove(); }
 </script>
 </body>
