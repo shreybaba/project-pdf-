@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ReadPDF — AI Reader</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f7f5f0;--surface:#ffffff;--surface2:#f0ede6;--surface3:#e8e5de;
+  --border:#e0ddd6;--border2:#ccc9c0;
+  --text:#1a1916;--text2:#6b6860;--text3:#a8a59e;
+  --accent:#c4502a;--accent2:#e06840;--accent-light:#faeee9;
+  --sidebar-w:310px;--chat-w:360px;--radius:10px;--radius-sm:7px;
+}
+[data-theme="dark"]{
+  --bg:#131210;--surface:#1c1a16;--surface2:#242219;--surface3:#2c2a24;
+  --border:#302e28;--border2:#3e3c34;
+  --text:#f0ede6;--text2:#a8a59e;--text3:#5a5850;
+  --accent:#e06840;--accent2:#f07850;--accent-light:#2a1a12;
+}
+
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;transition:background .2s,color .2s}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;gap:10px;padding:0 1rem;height:50px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;z-index:20}
+.topbar-brand{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.brand-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0}
+.topbar-file{font-size:11px;color:var(--text3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px}
+.ai-badge{font-size:10px;font-weight:500;background:var(--accent-light);color:var(--accent);padding:3px 8px;border-radius:99px;white-space:nowrap}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 9px;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:5px;font-size:12px;font-family:'DM Sans',sans-serif;transition:background .15s,color .15s}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+.icon-btn svg{width:13px;height:13px;flex-shrink:0}
+
+/* PROGRESS BAR */
+.progress-track{height:2px;background:var(--border);flex-shrink:0}
+.progress-fill{height:100%;width:0%;background:var(--accent);transition:width .25s ease}
+
+/* LAYOUT */
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* PDF PANEL */
+.pdf-panel{flex:1;overflow-y:auto;padding:1.25rem 1rem;background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:10px}
+.pdf-panel::-webkit-scrollbar{width:5px}
+.pdf-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+.page-wrap{position:relative;box-shadow:0 1px 10px rgba(0,0,0,.1);border-radius:3px;overflow:hidden;background:#fff}
+.page-wrap canvas{display:block}
+.page-label{position:absolute;bottom:7px;right:9px;font-size:10px;color:#bbb;pointer-events:none}
+
+/* UPLOAD STATE */
+.upload-state{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem}
+.drop-zone{width:100%;max-width:380px;border:1.5px dashed var(--border2);border-radius:16px;padding:2.5rem 2rem;cursor:pointer;transition:background .15s,border-color .15s;background:var(--surface);text-align:center}
+.drop-zone:hover,.drop-zone.over{background:var(--surface2);border-color:var(--accent)}
+.dz-icon{width:44px;height:44px;margin:0 auto 1rem;background:var(--surface2);border-radius:var(--radius);display:flex;align-items:center;justify-content:center}
+.drop-zone h2{font-family:'DM Serif Display',serif;font-size:19px;margin-bottom:.35rem;color:var(--text)}
+.drop-zone p{font-size:12px;color:var(--text3);line-height:1.6}
+.drop-zone input{display:none}
+
+/* LOADING */
+.loading{display:none;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;flex:1;color:var(--text2);font-size:13px}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .65s linear infinite}
+.loading-sub{font-size:11px;color:var(--text3)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-head{padding:.85rem 1rem .7rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem}
+.sidebar-head-row h3{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.chapter-count{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 7px;border-radius:99px}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:12px;height:12px;color:var(--text3);pointer-events:none}
+.search-input{width:100%;padding:6px 10px 6px 26px;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;transition:border-color .15s}
+.search-input::placeholder{color:var(--text3)}
+.search-input:focus{border-color:var(--accent)}
+
+/* CHAPTER LIST */
+.chapter-list{flex:1;overflow-y:auto;padding:.4rem 0}
+.chapter-list::-webkit-scrollbar{width:3px}
+.chapter-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+.chapter-item{display:flex;align-items:flex-start;gap:9px;padding:.5rem 1rem;cursor:pointer;transition:background .12s;border-left:2.5px solid transparent}
+.chapter-item:hover{background:var(--surface2)}
+.chapter-item.active{background:var(--accent-light);border-left-color:var(--accent)}
+.chapter-item.active .ch-title{color:var(--accent)}
+.chapter-item.active .ch-num{color:var(--accent)}
+.ch-num{font-size:10px;font-weight:500;color:var(--text3);min-width:20px;padding-top:2px;flex-shrink:0}
+.ch-body{flex:1;min-width:0}
+.ch-title{font-size:12px;color:var(--text);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-page{font-size:10px;color:var(--text3);margin-top:1px}
+.ch-sub{margin-top:3px}
+.ch-sub-item{font-size:11px;color:var(--text2);padding:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:flex;align-items:center;gap:4px}
+.ch-sub-item:hover{color:var(--accent)}
+.no-chapters{padding:2rem 1rem;text-align:center;color:var(--text3);font-size:12px;line-height:1.7}
+
+/* SIDEBAR FOOTER */
+.sidebar-footer{padding:.7rem 1rem;border-top:1px solid var(--border);flex-shrink:0}
+.stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem}
+.stat-label{font-size:10px;color:var(--text3)}
+.stat-val{font-size:10px;font-weight:500;color:var(--text)}
+.mini-bar{height:3px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-top:.35rem}
+.mini-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .4s ease}
+
+/* ZOOM */
+.zoom-controls{display:flex;align-items:center;gap:3px}
+.zoom-val{font-size:11px;color:var(--text2);min-width:36px;text-align:center}
+
+/* FAB */
+.chat-fab{position:fixed;bottom:1.5rem;right:calc(var(--sidebar-w) + 1.25rem);width:46px;height:46px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(196,80,42,.4);z-index:100;transition:transform .15s,box-shadow .15s}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(196,80,42,.5)}
+.chat-fab svg{width:18px;height:18px;color:#fff}
+
+/* CHAT PANEL */
+.chat-panel{position:fixed;bottom:0;right:var(--sidebar-w);width:var(--chat-w);height:490px;background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:16px 16px 0 0;display:flex;flex-direction:column;z-index:99;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);box-shadow:0 -4px 32px rgba(0,0,0,.14)}
+.chat-panel.open{transform:translateY(0)}
+
+.chat-header{display:flex;align-items:center;gap:9px;padding:.8rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.chat-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-avatar svg{width:14px;height:14px;color:var(--accent)}
+.chat-hinfo{flex:1}
+.chat-hinfo h4{font-size:13px;font-weight:500;color:var(--text)}
+.chat-hinfo p{font-size:10px;color:var(--text3)}
+.chat-close-btn{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:5px;display:flex;align-items:center;transition:background .12s}
+.chat-close-btn:hover{background:var(--surface2);color:var(--text)}
+.chat-close-btn svg{width:14px;height:14px}
+
+.chat-messages{flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.6rem}
+.chat-messages::-webkit-scrollbar{width:3px}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+.msg{max-width:90%;display:flex;flex-direction:column;gap:2px;animation:msgIn .2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.msg.user{align-self:flex-end}
+.msg.ai{align-self:flex-start}
+.msg-bubble{padding:.55rem .85rem;border-radius:12px;font-size:12px;line-height:1.6}
+.msg.user .msg-bubble{background:var(--accent);color:#fff;border-radius:12px 12px 3px 12px}
+.msg.ai .msg-bubble{background:var(--surface2);color:var(--text);border-radius:12px 12px 12px 3px;border:1px solid var(--border)}
+.msg-time{font-size:9px;color:var(--text3);padding:0 4px}
+.msg.user .msg-time{text-align:right}
+
+.suggestions{display:flex;flex-wrap:wrap;gap:5px;padding:.4rem .75rem .5rem}
+.chip{font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:99px;cursor:pointer;color:var(--text2);background:var(--surface);transition:all .12s;white-space:nowrap}
+.chip:hover{background:var(--accent-light);color:var(--accent);border-color:var(--accent)}
+
+.chat-input-row{display:flex;gap:6px;padding:.6rem .75rem .8rem;border-top:1px solid var(--border);align-items:flex-end}
+.chat-textarea{flex:1;padding:7px 10px;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;resize:none;max-height:80px;line-height:1.4;transition:border-color .15s}
+.chat-textarea::placeholder{color:var(--text3)}
+.chat-textarea:focus{border-color:var(--accent)}
+.send-btn{width:34px;height:34px;border-radius:var(--radius-sm);background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
+.send-btn:hover{opacity:.85}
+.send-btn:disabled{opacity:.35;cursor:not-allowed}
+.send-btn svg{width:13px;height:13px;color:#fff}
+
+.typing-wrap{display:flex;gap:3px;align-items:center;padding:.45rem .85rem}
+.typing-dot{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:tdot 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* API KEY MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.hidden{display:none}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.modal h3{font-family:'DM Serif Display',serif;font-size:21px;margin-bottom:.3rem}
+.modal p{font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.7}
+.modal-input{width:100%;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;margin-bottom:.75rem;transition:border-color .15s}
+.modal-input:focus{border-color:var(--accent)}
+.modal-input::placeholder{color:var(--text3)}
+.modal-btns{display:flex;gap:8px}
+.btn-primary{flex:1;padding:9px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:opacity .15s}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{padding:9px 14px;font-size:13px;font-family:'DM Sans',sans-serif;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);transition:background .15s}
+.btn-ghost:hover{background:var(--surface2)}
+.modal-note{font-size:10px;color:var(--text3);margin-top:.75rem;line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="overlay" id="apiModal">
+  <div class="modal">
+    <h3>Enter your Gemini API Key</h3>
+    <p>Your key stays in this browser tab only — it's never saved or sent anywhere except directly to Google's Gemini API. Get a free key at <strong>aistudio.google.com</strong> → Get API Key.</p>
+    <input class="modal-input" id="apiKeyInput" type="password" placeholder="AIzaSy... paste your key here"/>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="saveApiKey()">Save & Continue</button>
+      <button class="btn-ghost" onclick="skipApiKey()">Skip for now</button>
+    </div>
+    <p class="modal-note">⚠️ For personal local use only. Don't share this HTML file publicly with your key inside.</p>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand"><span class="brand-dot"></span>ReadPDF</span>
+  <span class="topbar-file" id="topbarFile">No file loaded</span>
+  <span class="ai-badge" id="aiBadge">✦ Gemini AI</span>
+
+  <div class="zoom-controls" id="zoomControls" style="display:none">
+    <button class="icon-btn" onclick="changeZoom(-0.15)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <span class="zoom-val" id="zoomVal">100%</span>
+    <button class="icon-btn" onclick="changeZoom(0.15)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+
+  <button class="icon-btn" onclick="triggerUpload()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Open PDF
+  </button>
+  <button class="icon-btn" onclick="document.getElementById('apiModal').classList.remove('hidden')" title="Change API Key">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    API Key
+  </button>
+  <button class="icon-btn" onclick="toggleTheme()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+</div>
+
+<!-- READING PROGRESS -->
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- PDF VIEWER -->
+  <div class="pdf-panel" id="pdfPanel">
+    <div class="upload-state" id="uploadState">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="dz-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="color:var(--text3)">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <h2>Drop your PDF here</h2>
+        <p>or click to browse<br/>Gemini AI will automatically extract all chapters</p>
+        <input type="file" id="fileInput" accept=".pdf"/>
+      </div>
+    </div>
+    <div class="loading" id="loadingState">
+      <div class="spinner"></div>
+      <span id="loadingMsg">Reading PDF…</span>
+      <span class="loading-sub" id="loadingSub">Please wait</span>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-head-row">
+        <h3>Chapters</h3>
+        <span class="chapter-count" id="chapterCount">—</span>
+      </div>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="searchInput" placeholder="Search chapters…" oninput="filterChapters()"/>
+      </div>
+    </div>
+    <div class="chapter-list" id="chapterList">
+      <div class="no-chapters">Upload a PDF and Gemini AI<br/>will detect all chapters automatically</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="stat-row">
+        <span class="stat-label">Reading progress</span>
+        <span class="stat-val" id="progressPct">0%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Page</span>
+        <span class="stat-val" id="pageInfo">— / —</span>
+      </div>
+      <div class="mini-bar"><div class="mini-fill" id="miniFill"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ASK ASSISTANT BUTTON -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Ask AI Assistant">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+</button>
+
+<!-- CHAT PANEL -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <div class="chat-avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    </div>
+    <div class="chat-hinfo">
+      <h4>PDF Assistant</h4>
+      <p>Powered by Gemini AI · Ask anything about your PDF</p>
+    </div>
+    <button class="chat-close-btn" onclick="toggleChat()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="chat-messages" id="chatMessages">
+    <div class="msg ai">
+      <div class="msg-bubble">Hi! I'm your PDF assistant. Upload a PDF and I can summarize chapters, answer questions, explain concepts, and more. 📄</div>
+      <span class="msg-time">Now</span>
+    </div>
+  </div>
+
+  <div class="suggestions" id="suggestionsRow">
+    <div class="chip" onclick="useSuggestion(this)">Summarize this PDF</div>
+    <div class="chip" onclick="useSuggestion(this)">List all key topics</div>
+    <div class="chip" onclick="useSuggestion(this)">What is chapter 1 about?</div>
+    <div class="chip" onclick="useSuggestion(this)">Explain the main argument</div>
+  </div>
+
+  <div class="chat-input-row">
+    <textarea class="chat-textarea" id="chatInput" placeholder="Ask something about your PDF…" rows="1"
+      onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* ─── CONFIG — PASTE YOUR KEY HERE ─── */
+let GEMINI_KEY = '';
+/* ────────────────────────────────────── */
+
+const GEMINI_URL = () =>
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
+let pdfDoc = null, totalPages = 0, scale = 1.4;
+let chapters = [], allChapters = [], currentPage = 1;
+let pdfBase64 = null, chatOpen = false;
+
+/* ── API KEY MODAL ── */
+function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if (!k) { alert('Please paste your Gemini API key.'); return; }
+  GEMINI_KEY = k;
+  document.getElementById('apiModal').classList.add('hidden');
+  document.getElementById('aiBadge').textContent = '✦ Gemini Ready';
+}
+function skipApiKey() {
+  document.getElementById('apiModal').classList.add('hidden');
+  document.getElementById('aiBadge').textContent = '✦ No API Key';
+}
+
+/* ── THEME ── */
+function toggleTheme() {
+  const h = document.documentElement;
+  h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+/* ── UPLOAD ── */
+function triggerUpload() { document.getElementById('fileInput').click(); }
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files[0]) loadPDF(e.target.files[0]);
+});
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f?.type === 'application/pdf') loadPDF(f);
+  else alert('Please drop a PDF file.');
+});
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+/* ── LOAD PDF ── */
+async function loadPDF(file) {
+  document.getElementById('uploadState').style.display = 'none';
+  setLoading(true, 'Reading PDF…', 'Loading document pages…');
+  document.getElementById('topbarFile').textContent = file.name;
+  document.getElementById('zoomControls').style.display = 'flex';
+
+  const buf = await file.arrayBuffer();
+  pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+  totalPages = pdfDoc.numPages;
+  document.getElementById('pageInfo').textContent = '1 / ' + totalPages;
+
+  setLoading(true, 'Converting for AI…', 'Preparing PDF for Gemini');
+  pdfBase64 = await fileToBase64(file);
+
+  setLoading(true, 'Extracting chapters…', 'Gemini AI is reading your document');
+  let extracted = [];
+  if (GEMINI_KEY) extracted = await extractWithGemini(file, pdfBase64);
+  if (!extracted.length) {
+    setLoading(true, 'Using smart detection…', 'Scanning headings and structure');
+    extracted = await extractFallback(pdfDoc);
+  }
+
+  allChapters = extracted;
+  chapters = extracted;
+  renderChapterList(chapters);
+  document.getElementById('chapterCount').textContent = chapters.length + ' found';
+
+  setLoading(false);
+  await renderAllPages();
+  setupScroll();
+}
+
+function setLoading(show, msg = '', sub = '') {
+  const el = document.getElementById('loadingState');
+  el.style.display = show ? 'flex' : 'none';
+  if (msg) document.getElementById('loadingMsg').textContent = msg;
+  if (sub) document.getElementById('loadingSub').textContent = sub;
+}
+
+/* ── GEMINI CHAPTER EXTRACTION ── */
+async function extractWithGemini(file, base64) {
+  try {
+    if (file.size > 19 * 1024 * 1024) return [];
+    const res = await fetch(GEMINI_URL(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { inline_data: { mime_type: 'application/pdf', data: base64 } },
+            { text: `You are a precise PDF chapter extractor. Analyze this entire PDF and extract ALL chapters, sections, and major subsections with their exact starting page numbers.
+
+CRITICAL: Return ONLY a valid JSON array. No explanation. No markdown. No code fences. Just pure JSON.
+
+Required format:
+[
+  {
+    "title": "Chapter 1: Introduction",
+    "page": 1,
+    "children": [
+      { "title": "1.1 Background", "page": 3 },
+      { "title": "1.2 Objectives", "page": 5 }
+    ]
+  }
+]
+
+Rules:
+- page = EXACT page number where that section STARTS in this PDF
+- children = subsections (max 5 per chapter, empty array if none)  
+- If PDF has a Table of Contents, use it as the primary reference
+- Include ALL top-level chapters/sections you find
+- Copy titles exactly as they appear in the PDF` }
+          ]
+        }],
+        generationConfig: { temperature: 0.05, maxOutputTokens: 2048 }
+      })
+    });
+    const data = await res.json();
+    if (!data.candidates?.[0]) return [];
+    let text = data.candidates[0].content.parts[0].text.trim();
+    text = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(text);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch(e) { console.error('Gemini extraction error:', e); return []; }
+}
+
+/* ── FALLBACK EXTRACTION ── */
+async function extractFallback(pdf) {
+  const results = [];
+  try {
+    const outline = await pdf.getOutline();
+    if (outline?.length > 0) {
+      for (const item of outline) {
+        if (!item.dest && !item.url) continue;
+        let pageNum = 1;
+        try {
+          let d = item.dest;
+          if (typeof d === 'string') d = await pdf.getDestination(d);
+          if (d) pageNum = await pdf.getPageIndex(d[0]) + 1;
+        } catch(e) {}
+        const children = [];
+        for (const sub of (item.items || []).slice(0, 5)) {
+          let sp = pageNum;
+          try {
+            let d = sub.dest;
+            if (typeof d === 'string') d = await pdf.getDestination(d);
+            if (d) sp = await pdf.getPageIndex(d[0]) + 1;
+          } catch(e) {}
+          children.push({ title: sub.title, page: sp });
+        }
+        results.push({ title: item.title, page: pageNum, children });
+      }
+      if (results.length >= 2) return results;
+    }
+  } catch(e) {}
+  const re = /^(chapter\s+[\divxlc]+[\.\:\-\s]|part\s+[\divxlc]+[\.\:\-\s]|\d{1,2}[\.\s]\s+[A-Z])/i;
+  const scanned = [];
+  for (let i = 1; i <= Math.min(pdf.numPages, 80); i++) {
+    const page = await pdf.getPage(i);
+    const tc = await page.getTextContent();
+    let lastY = null; const lines = [];
+    for (const it of tc.items) {
+      if (!it.str.trim()) continue;
+      if (lastY === null || Math.abs(it.transform[5] - lastY) > 5) {
+        lines.push({ text: it.str.trim(), size: it.height || 12 }); lastY = it.transform[5];
+      } else if (lines.length) lines[lines.length-1].text += ' ' + it.str.trim();
+    }
+    for (const ln of lines) {
+      if (ln.text.length < 3 || ln.text.length > 120) continue;
+      if (re.test(ln.text) || (ln.size > 14 && /^[A-Z][^.!?]{3,60}$/.test(ln.text)))
+        scanned.push({ title: ln.text, page: i, children: [] });
+    }
+  }
+  const deduped = [];
+  for (const c of scanned)
+    if (!deduped.length || deduped[deduped.length-1].page !== c.page || deduped[deduped.length-1].title !== c.title) deduped.push(c);
+  return deduped.slice(0, 60);
+}
+
+/* ── RENDER CHAPTER LIST ── */
+function renderChapterList(list) {
+  const el = document.getElementById('chapterList');
+  if (!list.length) {
+    el.innerHTML = '<div class="no-chapters">No chapters detected.<br/>Try a PDF with a Table of Contents.</div>';
+    return;
+  }
+  el.innerHTML = list.map((ch, i) => {
+    const subs = (ch.children || []).slice(0, 5).map(s =>
+      `<div class="ch-sub-item" onclick="event.stopPropagation();goToPage(${s.page})">
+        <span style="opacity:.4;font-size:9px">↳</span>${esc(s.title)}
+        <span style="color:var(--text3);margin-left:auto;flex-shrink:0;font-size:10px">p.${s.page}</span>
+      </div>`).join('');
+    return `<div class="chapter-item" id="ch-${i}" data-page="${ch.page}" onclick="goToPage(${ch.page})">
+      <span class="ch-num">${i + 1}</span>
+      <div class="ch-body">
+        <div class="ch-title" title="${esc(ch.title)}">${esc(ch.title)}</div>
+        <div class="ch-page">Page ${ch.page}</div>
+        ${subs ? `<div class="ch-sub">${subs}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── SEARCH ── */
+function filterChapters() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const filtered = q
+    ? allChapters.filter(c => c.title.toLowerCase().includes(q) || (c.children||[]).some(s => s.title.toLowerCase().includes(q)))
+    : allChapters;
+  chapters = filtered;
+  renderChapterList(filtered);
+  document.getElementById('chapterCount').textContent = filtered.length + ' found';
+}
+
+/* ── RENDER PAGES ── */
+async function renderAllPages() {
+  const panel = document.getElementById('pdfPanel');
+  panel.querySelectorAll('.page-wrap').forEach(e => e.remove());
+  for (let i = 1; i <= totalPages; i++) {
+    const wrap = document.createElement('div');
+    wrap.className = 'page-wrap'; wrap.id = 'page-' + i; wrap.dataset.page = i;
+    const canvas = document.createElement('canvas');
+    const lbl = document.createElement('div');
+    lbl.className = 'page-label'; lbl.textContent = i + ' / ' + totalPages;
+    wrap.appendChild(canvas); wrap.appendChild(lbl);
+    panel.appendChild(wrap);
+    renderPage(i, canvas);
+  }
+}
+async function renderPage(num, canvas) {
+  try {
+    const page = await pdfDoc.getPage(num);
+    const vp = page.getViewport({ scale });
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+  } catch(e) {}
+}
+
+/* ── SCROLL ── */
+function setupScroll() {
+  document.getElementById('pdfPanel').addEventListener('scroll', onScroll, { passive: true });
+}
+function onScroll() {
+  const panel = document.getElementById('pdfPanel');
+  const st = panel.scrollTop, sh = panel.scrollHeight - panel.clientHeight;
+  const pct = sh > 0 ? Math.round((st / sh) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('miniFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  let cur = 1; const pr = panel.getBoundingClientRect();
+  panel.querySelectorAll('.page-wrap').forEach(w => {
+    if (w.getBoundingClientRect().top <= pr.top + pr.height * 0.45) cur = parseInt(w.dataset.page);
+  });
+  if (cur !== currentPage) {
+    currentPage = cur;
+    document.getElementById('pageInfo').textContent = cur + ' / ' + totalPages;
+    highlightChapter(cur);
+  }
+}
+function highlightChapter(page) {
+  const items = document.querySelectorAll('.chapter-item');
+  let idx = -1;
+  allChapters.forEach((c, i) => { if (c.page <= page) idx = i; });
+  items.forEach((el, i) => el.classList.toggle('active', i === idx));
+  if (idx >= 0 && items[idx]) items[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function goToPage(n) {
+  const el = document.getElementById('page-' + n);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ── ZOOM ── */
+function changeZoom(d) {
+  scale = Math.max(0.5, Math.min(3, scale + d));
+  document.getElementById('zoomVal').textContent = Math.round(scale / 1.4 * 100) + '%';
+  if (pdfDoc) renderAllPages();
+}
+
+/* ── CHAT ── */
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+  if (chatOpen) setTimeout(() => document.getElementById('chatInput').focus(), 300);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
+}
+
+function useSuggestion(el) {
+  document.getElementById('chatInput').value = el.textContent;
+  document.getElementById('suggestionsRow').style.display = 'none';
+  sendMessage();
+}
+
+async function sendMessage() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  if (!GEMINI_KEY) {
+    addMsg('ai', '⚠️ No API key set. Click the "API Key" button in the top bar to add your Gemini key.');
+    return;
+  }
+  addMsg('user', text);
+  inp.value = ''; inp.style.height = 'auto';
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('suggestionsRow').style.display = 'none';
+  const tid = 'typing-' + Date.now();
+  addTyping(tid);
+
+  try {
+    const parts = [];
+    if (pdfBase64) {
+      parts.push({ inline_data: { mime_type: 'application/pdf', data: pdfBase64 } });
+      parts.push({ text: `You are a helpful PDF reading assistant. The user is currently reading the PDF above. Answer their question clearly and concisely. If they ask about a specific chapter or page, refer to the actual content in the PDF.\n\nUser: ${text}` });
+    } else {
+      parts.push({ text: `The user hasn't uploaded a PDF yet. Politely let them know they need to upload a PDF first, then answer if possible.\n\nUser: ${text}` });
+    }
+
+    const res = await fetch(GEMINI_URL(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: { temperature: 0.4, maxOutputTokens: 1024 }
+      })
+    });
+    const data = await res.json();
+    removeEl(tid);
+    if (data.candidates?.[0]) {
+      addMsg('ai', data.candidates[0].content.parts[0].text);
+    } else {
+      addMsg('ai', 'Something went wrong. Please check your API key and try again.');
+    }
+  } catch(e) {
+    removeEl(tid);
+    addMsg('ai', 'Network error. Please check your internet connection and API key.');
+  }
+  document.getElementById('sendBtn').disabled = false;
+}
+
+function addMsg(role, text) {
+  const msgs = document.getElementById('chatMessages');
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `<div class="msg-bubble">${esc(text).replace(/\n/g, '<br/>')}</div><span class="msg-time">${time}</span>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addTyping(id) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg ai'; div.id = id;
+  div.innerHTML = `<div class="msg-bubble"><div class="typing-wrap"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeEl(id) { document.getElementById(id)?.remove(); }
+</script>
+</body>
+</html>
