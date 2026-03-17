@@ -6,7 +6,7 @@
 <title>ReadPDF by shreybaba</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%233b82f6'/%3E%3Cstop offset='100%25' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Cpath d='M20 14h16l10 10v26a2 2 0 0 1-2 2H20a2 2 0 0 1-2-2V16a2 2 0 0 1 2-2z' fill='none' stroke='white' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M36 14v10h10' fill='none' stroke='white' stroke-width='3' stroke-linejoin='round'/%3E%3Cline x1='24' y1='34' x2='40' y2='34' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='24' y1='40' x2='40' y2='40' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"/>
+<link rel="icon" type="image/png" href="data:image/png;base64,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"/>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,signInWithPopup,GoogleAuthProvider}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -590,6 +590,57 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.07);border-radius:10px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(59,130,246,0.2)}
+
+/* ═══ CALENDAR ═══ */
+.btn-cal-setup{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--txt2);font-size:.78rem;font-weight:700;font-family:Arial,sans-serif;cursor:pointer;transition:all .15s}
+.btn-cal-setup:hover{background:var(--s3);color:var(--txt)}
+.cal-setup-card{background:linear-gradient(135deg,rgba(59,130,246,0.07),rgba(124,58,237,0.05));border:1px solid rgba(59,130,246,0.15);border-radius:14px;padding:1.1rem 1.25rem}
+.cal-week-header{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.55rem}
+.cal-day{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:.65rem .5rem;text-align:center;transition:all .15s;cursor:default;position:relative}
+.cal-day.today{border-color:rgba(59,130,246,0.4);background:rgba(59,130,246,0.06)}
+.cal-day.done{border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.06)}
+.cal-day.today::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60%;height:2px;background:var(--g1);border-radius:0 0 2px 2px}
+.cal-day-name{font-size:.63rem;font-weight:800;color:var(--txt3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.3rem}
+.cal-day-num{font-size:1.05rem;font-weight:900;color:var(--txt);margin-bottom:.35rem}
+.cal-day.today .cal-day-num{background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cal-day-pages{font-size:.68rem;color:var(--txt2);line-height:1.4}
+.cal-day-books{display:flex;flex-direction:column;gap:2px;margin-top:.3rem}
+.cal-book-chip{font-size:.58rem;padding:1px 5px;border-radius:99px;background:rgba(59,130,246,0.1);color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.cal-day.done .cal-day-pages{color:var(--green)}
+.cal-tick{font-size:1rem;margin-top:.2rem}
+.cal-books-list{display:flex;flex-direction:column;gap:.75rem}
+.cal-book-row{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:1rem 1.15rem;display:flex;align-items:center;gap:1rem}
+.cal-book-emoji{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.cal-book-info{flex:1;min-width:0}
+.cal-book-name{font-size:.88rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:.2rem}
+.cal-book-sub{font-size:.73rem;color:var(--txt2)}
+.cal-book-plan{font-size:.72rem;font-weight:700;color:var(--blue);text-align:right;flex-shrink:0}
+.cal-empty{text-align:center;padding:2.5rem;color:var(--txt3);font-size:.82rem;line-height:1.75}
+.cal-setup-inner input[type=number]{background:none;border:none;color:var(--blue);font-size:1.1rem;font-weight:900;outline:none;text-align:center;width:60px}
+
+/* ═══ OFFLINE BOOKS ═══ */
+.off-add-card{background:var(--s1);border:1px solid rgba(59,130,246,0.18);border-radius:14px;padding:1.25rem}
+.off-add-card input:focus{border-color:rgba(59,130,246,0.5)!important;box-shadow:0 0 0 3px rgba(59,130,246,0.08)}
+.off-books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem}
+.off-book-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:1.1rem;display:flex;flex-direction:column;gap:.85rem;transition:all .2s;position:relative}
+.off-book-card:hover{border-color:var(--bdr2);box-shadow:0 6px 22px rgba(0,0,0,.35)}
+.off-book-header{display:flex;align-items:flex-start;gap:.75rem}
+.off-book-emoji{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.off-book-title{font-size:.92rem;font-weight:800;line-height:1.3;margin-bottom:.15rem}
+.off-book-meta{font-size:.72rem;color:var(--txt2)}
+.off-book-del{position:absolute;top:.8rem;right:.8rem;background:none;border:none;cursor:pointer;color:var(--txt3);padding:3px;border-radius:5px;display:flex;align-items:center;transition:all .12s}
+.off-book-del:hover{color:var(--red);background:rgba(239,68,68,0.1)}
+.off-book-del svg{width:13px;height:13px}
+.off-prog-bar{height:7px;background:var(--s2);border-radius:99px;overflow:hidden}
+.off-prog-fill{height:100%;border-radius:99px;background:var(--g1);transition:width .5s cubic-bezier(.34,1.56,.64,1)}
+.off-update-row{display:flex;align-items:center;gap:.55rem}
+.off-page-inp{flex:1;padding:.55rem .75rem;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--txt);font-size:.85rem;font-family:Arial,sans-serif;outline:none;transition:border-color .2s}
+.off-page-inp:focus{border-color:rgba(59,130,246,0.4)}
+.off-update-btn{padding:.55rem .9rem;background:var(--g1);border:none;border-radius:8px;color:#fff;font-size:.78rem;font-weight:700;font-family:Arial,sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
+.off-update-btn:hover{opacity:.88}
+.off-book-streak{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--amber);font-weight:700}
+.off-done-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:99px;background:rgba(16,185,129,0.1);color:var(--green);border:1px solid rgba(16,185,129,0.2)}
 </style>
 </head>
 <body>
@@ -653,6 +704,12 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
     <div class="nav-tabs">
       <button class="nav-tab active" id="tabDash" onclick="switchTab('dash')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+      </button>
+      <button class="nav-tab" id="tabCal" onclick="switchTab('cal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar
+      </button>
+      <button class="nav-tab" id="tabOffline" onclick="switchTab('offline')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/><line x1="12" y1="12" x2="20" y2="20"/></svg>Offline
       </button>
       <button class="nav-tab" id="tabLib" onclick="switchTab('lib')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Library
@@ -754,11 +811,88 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
     </div>
     <div class="lib-upload-zone fu" id="libUploadZone" onclick="triggerLibUpload()" ondragover="libDragOver(event)" ondragleave="libDragLeave(event)" ondrop="libDrop(event)">
       <div class="luz-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-      <div class="luz-text"><h3>Add new PDF to library</h3><p>Uploaded once, read from anywhere — no re-uploading needed ☁️</p></div>
+      <div class="luz-text"><h3>Upload PDF to cloud library</h3><p>Saved to your account forever — open instantly from any device, no re-uploading ever ☁️</p></div>
       <button class="luz-btn" onclick="event.stopPropagation();triggerLibUpload()">Browse files</button>
     </div>
     <input type="file" id="libFileInp" accept=".pdf" style="display:none" onchange="handleLibFileChange(event)" multiple/>
     <div class="book-grid" id="bookGrid"></div>
+  </div>
+
+  <!-- ═══ CALENDAR PANEL ═══ -->
+  <div id="calPanel" class="dash-body" style="display:none">
+    <div class="greeting fu">
+      <div class="greeting-left">
+        <h2 style="font-size:1.4rem;font-weight:900">📅 Reading <em>Calendar</em></h2>
+        <p>AI-powered daily reading plan for all your books</p>
+      </div>
+      <button class="btn-cal-setup" id="calSetupBtn" onclick="showCalSetup()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Set daily goal
+      </button>
+    </div>
+
+    <!-- Daily goal setup card -->
+    <div class="cal-setup-card fu" id="calSetupCard" style="display:none">
+      <div class="cal-setup-inner">
+        <div style="font-size:.8rem;font-weight:700;margin-bottom:.75rem;color:var(--txt)">📖 How many pages can you read daily?</div>
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:.5rem;background:var(--s2);border:1px solid var(--bdr);border-radius:9px;padding:.5rem .85rem">
+            <label style="font-size:.76rem;color:var(--txt2)">Min pages/day</label>
+            <input type="number" id="calMinPages" value="20" min="1" max="500" style="width:60px;background:none;border:none;color:var(--blue);font-size:1rem;font-weight:900;outline:none;text-align:center"/>
+          </div>
+          <button onclick="generateCalendar()" style="padding:.55rem 1.1rem;background:var(--g1);border:none;border-radius:8px;color:#fff;font-size:.82rem;font-weight:700;font-family:Arial,sans-serif;cursor:pointer">
+            ✦ Generate Plan
+          </button>
+          <button onclick="document.getElementById('calSetupCard').style.display='none'" style="padding:.55rem .9rem;background:none;border:1px solid var(--bdr);border-radius:8px;color:var(--txt2);font-size:.78rem;font-family:Arial,sans-serif;cursor:pointer">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar grid -->
+    <div class="cal-week-header fu" id="calWeekNav">
+      <button onclick="calNav(-7)" style="background:none;border:1px solid var(--bdr);border-radius:7px;padding:5px 10px;cursor:pointer;color:var(--txt2);font-family:Arial,sans-serif;font-size:.76rem">← Prev</button>
+      <span id="calWeekLabel" style="font-size:.85rem;font-weight:700;color:var(--txt)">This week</span>
+      <button onclick="calNav(7)" style="background:none;border:1px solid var(--bdr);border-radius:7px;padding:5px 10px;cursor:pointer;color:var(--txt2);font-family:Arial,sans-serif;font-size:.76rem">Next →</button>
+    </div>
+    <div class="cal-grid fu" id="calGrid"></div>
+    <div class="cal-books-list fu" id="calBooksList"></div>
+  </div>
+
+  <!-- ═══ OFFLINE BOOKS PANEL ═══ -->
+  <div id="offlinePanel" class="dash-body" style="display:none">
+    <div class="greeting fu">
+      <div class="greeting-left">
+        <h2 style="font-size:1.4rem;font-weight:900">📚 Offline <em>Books</em></h2>
+        <p>Track physical books & PDFs you're reading offline</p>
+      </div>
+      <button onclick="showAddOfflineBook()" style="display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--g1);border:none;border-radius:8px;color:#fff;font-size:.8rem;font-weight:700;font-family:Arial,sans-serif;cursor:pointer;box-shadow:0 2px 12px rgba(59,130,246,0.25)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Book
+      </button>
+    </div>
+
+    <!-- Add book form -->
+    <div class="off-add-card fu" id="offAddCard" style="display:none">
+      <div style="font-size:.82rem;font-weight:800;margin-bottom:.9rem;color:var(--txt)">Add an offline book</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+        <div>
+          <div style="font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);margin-bottom:.28rem">Book title</div>
+          <input type="text" id="offTitleInp" placeholder="e.g. Atomic Habits" style="width:100%;padding:.65rem .85rem;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:9px;color:var(--txt);font-size:.88rem;font-family:Arial,sans-serif;outline:none"/>
+        </div>
+        <div>
+          <div style="font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);margin-bottom:.28rem">Total pages</div>
+          <input type="number" id="offPagesInp" placeholder="320" min="1" style="width:100%;padding:.65rem .85rem;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:9px;color:var(--txt);font-size:.88rem;font-family:Arial,sans-serif;outline:none"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <button onclick="addOfflineBook()" style="padding:.65rem 1.2rem;background:var(--g1);border:none;border-radius:8px;color:#fff;font-size:.82rem;font-weight:700;font-family:Arial,sans-serif;cursor:pointer">Add Book</button>
+        <button onclick="document.getElementById('offAddCard').style.display='none'" style="padding:.65rem .9rem;background:none;border:1px solid var(--bdr);border-radius:8px;color:var(--txt2);font-size:.8rem;font-family:Arial,sans-serif;cursor:pointer">Cancel</button>
+      </div>
+    </div>
+
+    <div class="off-books-grid fu" id="offBooksGrid">
+      <div class="empty-state" style="grid-column:1/-1">No offline books yet.<br/>Add a book you're reading physically or offline!</div>
+    </div>
   </div>
 </div>
 
@@ -789,9 +923,9 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
     <div class="pdf-viewer" id="pdfViewer">
       <div class="upload-ov" id="uploadOv">
         <div class="dz" id="dz" onclick="document.getElementById('fileInp').click()">
-          <div style="font-size:2.5rem;margin-bottom:.75rem">📄</div>
-          <h3>Open a PDF to read</h3>
-          <p>Or pick from your Library — cloud files open instantly.</p>
+          <div style="font-size:2.5rem;margin-bottom:.75rem">☁️</div>
+          <h3>Open a PDF</h3>
+          <p>Drop a PDF here to open it<br/><strong style="color:var(--blue)">or go to Library tab to save it to your cloud</strong><br/><span style="color:var(--txt3);font-size:.72rem">Cloud PDFs open instantly — no re-uploading</span></p>
           <input type="file" id="fileInp" accept=".pdf"/>
         </div>
       </div>
@@ -884,11 +1018,17 @@ function waitForFb(){return new Promise(r=>{if(window._fbReady){r(window._fb);re
 /* TAB */
 function switchTab(tab){
   activeTab=tab;
-  ['tabDash','tabLib'].forEach(id=>document.getElementById(id).classList.remove('active'));
-  document.getElementById(tab==='dash'?'tabDash':'tabLib').classList.add('active');
-  document.getElementById('dashPanel').style.display=tab==='dash'?'flex':'none';
-  document.getElementById('libPanel').style.display=tab==='lib'?'flex':'none';
+  const tabs=['tabDash','tabCal','tabOffline','tabLib'];
+  const panels={dash:'dashPanel',cal:'calPanel',offline:'offlinePanel',lib:'libPanel'};
+  tabs.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
+  const activeTabEl=document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1));
+  if(activeTabEl)activeTabEl.classList.add('active');
+  Object.entries(panels).forEach(([k,id])=>{
+    const el=document.getElementById(id);if(el)el.style.display=k===tab?'flex':'none';
+  });
   if(tab==='lib')buildLibrary();
+  if(tab==='cal')buildCalendar();
+  if(tab==='offline')buildOfflineBooks();
 }
 
 /* FIRESTORE */
@@ -1077,15 +1217,33 @@ async function buildDash(){
   document.getElementById('dashAvatar').textContent=name.slice(0,2).toUpperCase();
   const streak=userProfile.streak||0;const stats=userProfile.stats||{};
   document.getElementById('greetSub').textContent=streak>0?`You're on a ${streak}-day streak — keep it going! 🚀`:'Welcome back! Start reading to build your streak.';
-  document.getElementById('statBooks').textContent=stats.booksOpened||0;
-  document.getElementById('statPages').textContent=(stats.pagesRead||0).toLocaleString();
+
+  // Accurate stats from Firestore
+  const freshStats=await getFreshStats();
+  document.getElementById('statBooks').textContent=freshStats.books;
+  document.getElementById('statPages').textContent=freshStats.pages.toLocaleString();
   document.getElementById('statSynopses').textContent=stats.synopsesUsed||0;
   document.getElementById('statStreak').textContent=streak;
   setStreakUI(streak);
   document.getElementById('navStreakNum').textContent=streak;
-  const books=await loadRecentBooks();
+
+  // Populate allBooks so Continue Reading / openBookFromLibrary works from dashboard
+  allBooks=await loadAllBooks();
+  filteredBooks=[...allBooks];
+  const books=allBooks.slice().sort((a,b)=>(b.lastRead?.seconds||0)-(a.lastRead?.seconds||0)).slice(0,8);
   buildRecentBooks(books);buildCurrentBook(books[0]);
   fetchQuote();
+}
+
+async function getFreshStats(){
+  // Count directly from books collection for accuracy
+  const books=allBooks.length>0?allBooks:await loadAllBooks();
+  const totalBooks=books.length;
+  const totalPagesRead=books.reduce((s,b)=>{
+    if(b.totalPages&&b.progress)return s+Math.round((b.progress/100)*b.totalPages);
+    return s+(b.currentPage||1)-1;
+  },0);
+  return{books:totalBooks,pages:Math.max(totalPagesRead,userProfile?.stats?.pagesRead||0)};
 }
 
 /* LIBRARY */
@@ -1160,29 +1318,87 @@ async function confirmDelete(){
 function triggerLibUpload(){document.getElementById('libFileInp').click();}
 async function handleLibFileChange(e){
   const files=[...e.target.files];e.target.value='';if(!files.length)return;
-  if(files.length===1){goReader();setTimeout(()=>loadPDF(files[0]),100);}
-  else{switchTab('lib');for(const f of files)await uploadOnlyToLibrary(f);buildLibrary();showToast(`✓ ${files.length} PDFs saved!`);}
+  // ALL files: upload to cloud first, then open the first one
+  if(files.length===1){
+    showToast('☁️ Uploading to cloud first…');
+    switchTab('lib');
+    const bookId=await uploadOnlyToLibrary(files[0]);
+    if(bookId){
+      allBooks=await loadAllBooks();
+      const book=allBooks.find(b=>b.id===bookId);
+      if(book?.storageUrl){await loadPDFFromURL(book.storageUrl,book.name,1);}
+      else{goReader();setTimeout(()=>loadPDF(files[0]),100);}
+    }else{goReader();setTimeout(()=>loadPDF(files[0]),100);}
+  } else {
+    switchTab('lib');
+    for(const f of files)await uploadOnlyToLibrary(f);
+    buildLibrary();showToast(`✓ ${files.length} PDFs saved to cloud!`);
+  }
 }
 async function uploadOnlyToLibrary(file){
-  if(!currentUser||!file)return;
-  const fname=file.name.replace('.pdf','');
+  if(!currentUser||!file)return null;
+  const fname=file.name.replace(/\.pdf$/i,'').trim();
+
+  // Find existing book by name (case-insensitive) to avoid duplicates
   const booksRef=fb.collection(fb.db,'users',currentUser.uid,'books');
-  const snap=await fb.getDocs(booksRef);let existingId=null;
-  snap.forEach(d=>{if(d.data().name===fname)existingId=d.id;});
+  const snap=await fb.getDocs(booksRef);
+  let existingId=null,existingHasCloud=false;
+  snap.forEach(d=>{
+    if(d.data().name.toLowerCase()===fname.toLowerCase()){
+      existingId=d.id;
+      existingHasCloud=!!d.data().storageUrl;
+    }
+  });
+
+  // If already cloud-saved, skip re-upload
+  if(existingId&&existingHasCloud){
+    showToast(`☁️ "${fname}" already in cloud — no re-upload needed!`);
+    return existingId;
+  }
+
   const bookId=existingId||fb.doc(booksRef).id;
   try{
-    const result=await uploadPDFToStorage(file,bookId);if(!result)return;
-    await fb.setDoc(fb.doc(fb.db,'users',currentUser.uid,'books',bookId),{name:fname,currentPage:1,currentChapter:'',progress:0,totalPages:0,chapters:[],lastRead:fb.serverTimestamp(),emoji:getBookEmoji(fname),storageUrl:result.url,storagePath:result.path},{merge:true});
-    showToast(`☁️ "${fname}" saved`);
-  }catch(err){showToast('⚠️ Upload failed: '+err.message);}
+    const result=await uploadPDFToStorage(file,bookId);
+    if(!result)return null;
+
+    // Merge storageUrl into existing doc OR create new one
+    const docData={
+      name:fname,
+      storageUrl:result.url,
+      storagePath:result.path,
+      lastRead:fb.serverTimestamp(),
+      emoji:getBookEmoji(fname),
+    };
+    if(!existingId){
+      // New book — set full data
+      Object.assign(docData,{currentPage:1,currentChapter:'',progress:0,totalPages:0,chapters:[],openedAt:fb.serverTimestamp()});
+    }
+    await fb.setDoc(fb.doc(fb.db,'users',currentUser.uid,'books',bookId),docData,{merge:true});
+    showToast(`☁️ "${fname}" saved — opens instantly next time!`);
+    return bookId;
+  }catch(err){
+    showToast('⚠️ Upload failed: '+err.message);
+    return null;
+  }
 }
 function libDragOver(e){e.preventDefault();document.getElementById('libUploadZone').classList.add('over');}
 function libDragLeave(){document.getElementById('libUploadZone').classList.remove('over');}
-function libDrop(e){
+async function libDrop(e){
   e.preventDefault();document.getElementById('libUploadZone').classList.remove('over');
   const files=[...e.dataTransfer.files].filter(f=>f.type==='application/pdf');if(!files.length)return;
-  if(files.length===1){goReader();setTimeout(()=>loadPDF(files[0]),100);}
-  else{switchTab('lib');files.forEach(f=>uploadOnlyToLibrary(f));setTimeout(()=>{buildLibrary();showToast(`✓ ${files.length} PDFs saved!`);},2000);}
+  if(files.length===1){
+    showToast('☁️ Uploading to cloud…');
+    const bookId=await uploadOnlyToLibrary(files[0]);
+    if(bookId){
+      allBooks=await loadAllBooks();
+      const book=allBooks.find(b=>b.id===bookId);
+      if(book?.storageUrl)await loadPDFFromURL(book.storageUrl,book.name,book.currentPage||1);
+      else{goReader();setTimeout(()=>loadPDF(files[0]),100);}
+    }
+  } else {
+    for(const f of files)await uploadOnlyToLibrary(f);
+    buildLibrary();showToast(`✓ ${files.length} PDFs saved to cloud!`);
+  }
 }
 
 /* DASHBOARD BUILDERS */
@@ -1499,7 +1715,286 @@ function friendlyErr(msg){
   if(msg.includes('RATE_LIMIT')||msg.includes('429'))return'Rate limit — wait a moment.';
   return msg;
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideApiModal();hideDelModal();closeBookDetailDirect();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideApiModal();hideDelModal();closeBookDetailDirect();document.getElementById('offAddCard').style.display='none';document.getElementById('calSetupCard').style.display='none';}});
+
+/* ═══════════════════════════════════════
+   CALENDAR FEATURE
+═══════════════════════════════════════ */
+let calOffset=0; // days offset from today's week
+let calPlan=null; // { minPages, plan:[{bookId,pagesPerDay,finishDate}] }
+
+function showCalSetup(){
+  const card=document.getElementById('calSetupCard');
+  card.style.display=card.style.display==='none'?'block':'none';
+}
+
+async function generateCalendar(){
+  const minPages=parseInt(document.getElementById('calMinPages').value)||20;
+  if(minPages<1){showToast('Enter a valid page count');return;}
+
+  // Save preference
+  try{localStorage.setItem('rpdf_cal_min',minPages);}catch(e){}
+
+  const books=allBooks.length>0?allBooks:await loadAllBooks();
+  if(!books.length){showToast('No books in your library yet!');document.getElementById('calSetupCard').style.display='none';return;}
+
+  // Build plan: for each unfinished book, calculate days to finish at minPages/day
+  const unfinished=books.filter(b=>(b.progress||0)<95);
+  const plan=unfinished.map(b=>{
+    const remaining=b.totalPages?Math.max(0,b.totalPages-((b.currentPage||1)-1)):100;
+    const days=Math.ceil(remaining/minPages);
+    const finishDate=new Date();finishDate.setDate(finishDate.getDate()+days);
+    return{bookId:b.id,name:b.name,emoji:b.emoji||'📖',remaining,pagesPerDay:minPages,days,finishDate:finishDate.toDateString(),totalPages:b.totalPages||'?',progress:b.progress||0};
+  });
+
+  calPlan={minPages,plan,generatedAt:Date.now()};
+  try{localStorage.setItem('rpdf_cal_plan',JSON.stringify(calPlan));}catch(e){}
+
+  document.getElementById('calSetupCard').style.display='none';
+  buildCalendar();
+  showToast(`✦ Reading plan generated for ${plan.length} book${plan.length!==1?'s':''}!`);
+}
+
+function calNav(days){calOffset+=days;buildCalendar();}
+
+function buildCalendar(){
+  // Load plan from localStorage if not in memory
+  if(!calPlan){
+    try{const s=localStorage.getItem('rpdf_cal_plan');if(s)calPlan=JSON.parse(s);}catch(e){}
+  }
+  const minPages=calPlan?.minPages||parseInt(localStorage.getItem('rpdf_cal_min'))||20;
+  if(document.getElementById('calMinPages'))document.getElementById('calMinPages').value=minPages;
+
+  const today=new Date();
+  const startOfWeek=new Date(today);
+  startOfWeek.setDate(today.getDate()-today.getDay()+1+calOffset); // Mon
+
+  // Week label
+  const endOfWeek=new Date(startOfWeek);endOfWeek.setDate(startOfWeek.getDate()+6);
+  const fmt=d=>d.toLocaleDateString([],{month:'short',day:'numeric'});
+  document.getElementById('calWeekLabel').textContent=`${fmt(startOfWeek)} – ${fmt(endOfWeek)}`;
+
+  const dayNames=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const grid=document.getElementById('calGrid');
+
+  grid.innerHTML=dayNames.map((name,i)=>{
+    const day=new Date(startOfWeek);day.setDate(startOfWeek.getDate()+i);
+    const isToday=day.toDateString()===today.toDateString();
+    const isPast=day<today&&!isToday;
+    const key=`rpdf_cal_done_${day.toDateString()}`;
+    const isDone=localStorage.getItem(key)==='1';
+
+    // Which books to read today (if plan exists)
+    const booksToday=calPlan?.plan||[];
+    const bookChips=booksToday.slice(0,3).map(b=>`<div class="cal-book-chip">${b.emoji} ${esc(b.name.slice(0,10))}${b.name.length>10?'…':''}</div>`).join('');
+    const pagesText=booksToday.length?`${minPages}p · ${booksToday.length} book${booksToday.length!==1?'s':''}`:calPlan?`${minPages}p`:'Set goal →';
+
+    return`<div class="cal-day${isToday?' today':''}${isDone?' done':''}" onclick="calDayClick('${day.toDateString()}',this)">
+      <div class="cal-day-name">${name}</div>
+      <div class="cal-day-num">${day.getDate()}</div>
+      ${isDone?'<div class="cal-tick">✓</div>':`<div class="cal-day-pages">${pagesText}</div>`}
+      ${!isDone&&booksToday.length?`<div class="cal-day-books">${bookChips}</div>`:''}
+    </div>`;
+  }).join('');
+
+  // Book plan list below calendar
+  const list=document.getElementById('calBooksList');
+  if(!calPlan||!calPlan.plan.length){
+    list.innerHTML=`<div class="cal-empty">No reading plan yet.<br/>Click <strong>"Set daily goal"</strong> above to generate your AI-powered reading schedule.</div>`;
+    return;
+  }
+  list.innerHTML=`<div style="font-size:.66rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--txt3);margin-bottom:.5rem">Your Reading Plan</div>`+
+  calPlan.plan.map(b=>{
+    const pct=b.progress;
+    return`<div class="cal-book-row">
+      <div class="cal-book-emoji" style="background:var(--g1)">${b.emoji}</div>
+      <div class="cal-book-info">
+        <div class="cal-book-name">${esc(b.name)}</div>
+        <div class="cal-book-sub">${b.remaining} pages left · finishes ${b.finishDate}</div>
+        <div style="margin-top:.4rem;height:4px;background:var(--s2);border-radius:99px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--g1);border-radius:99px"></div></div>
+      </div>
+      <div class="cal-book-plan">
+        <div style="font-size:1.3rem;font-weight:900;color:var(--blue)">${b.pagesPerDay}</div>
+        <div style="font-size:.65rem;color:var(--txt3)">pages/day</div>
+        <div style="font-size:.65rem;color:var(--txt2);margin-top:2px">${b.days} days</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calDayClick(dateStr,el){
+  const key=`rpdf_cal_done_${dateStr}`;
+  const wasDone=localStorage.getItem(key)==='1';
+  if(wasDone){localStorage.removeItem(key);el.classList.remove('done');el.querySelector('.cal-tick')?.remove();}
+  else{localStorage.setItem(key,'1');el.classList.add('done');el.innerHTML=el.innerHTML.replace(/<div class="cal-day-pages">.*?<\/div>/s,'');if(!el.querySelector('.cal-tick')){const t=document.createElement('div');t.className='cal-tick';t.textContent='✓';el.appendChild(t);}}
+}
+
+/* ═══════════════════════════════════════
+   OFFLINE BOOKS — Firebase backed
+═══════════════════════════════════════ */
+let offlineBooks=[];
+
+async function loadOfflineBooks(){
+  if(!currentUser)return;
+  try{
+    const snap=await fb.getDocs(fb.collection(fb.db,'users',currentUser.uid,'offlineBooks'));
+    offlineBooks=[];
+    snap.forEach(d=>offlineBooks.push({id:d.id,...d.data()}));
+    offlineBooks.sort((a,b)=>new Date(b.addedAt)-new Date(a.addedAt));
+  }catch(e){offlineBooks=[];}
+}
+
+async function saveOfflineBook(book){
+  if(!currentUser)return;
+  const ref=fb.doc(fb.db,'users',currentUser.uid,'offlineBooks',book.id);
+  const data={...book};
+  delete data.id;
+  await fb.setDoc(ref,data);
+}
+
+async function deleteOfflineBookFromDB(bookId){
+  if(!currentUser)return;
+  await fb.deleteDoc(fb.doc(fb.db,'users',currentUser.uid,'offlineBooks',bookId));
+}
+
+function showAddOfflineBook(){
+  const card=document.getElementById('offAddCard');
+  card.style.display=card.style.display==='none'?'block':'none';
+  if(card.style.display==='block'){
+    document.getElementById('offTitleInp').value='';
+    document.getElementById('offPagesInp').value='';
+    setTimeout(()=>document.getElementById('offTitleInp').focus(),100);
+  }
+}
+
+async function addOfflineBook(){
+  const title=document.getElementById('offTitleInp').value.trim();
+  const pages=parseInt(document.getElementById('offPagesInp').value)||0;
+  if(!title){showToast('Enter a book title');return;}
+  if(pages<1){showToast('Enter total pages');return;}
+  if(!currentUser){showToast('Please sign in first');return;}
+
+  const btn=document.querySelector('#offAddCard button');
+  if(btn){btn.textContent='Saving…';btn.disabled=true;}
+
+  const bookId='off_'+Date.now();
+  const book={
+    id:bookId,
+    name:title,totalPages:pages,currentPage:1,
+    emoji:getBookEmoji(title),
+    addedAt:new Date().toISOString(),
+    lastUpdated:new Date().toDateString(),
+    streak:0,log:[]
+  };
+  try{
+    await saveOfflineBook(book);
+    offlineBooks.unshift(book);
+    document.getElementById('offAddCard').style.display='none';
+    buildOfflineBooks();
+    showToast(`📚 "${title}" saved to your account!`);
+  }catch(e){
+    showToast('⚠️ Failed to save: '+e.message);
+  }finally{
+    if(btn){btn.textContent='Add Book';btn.disabled=false;}
+  }
+}
+
+async function buildOfflineBooks(){
+  const grid=document.getElementById('offBooksGrid');
+  grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="spinner" style="margin:0 auto .5rem"></div>Loading…</div>`;
+  await loadOfflineBooks();
+  if(!offlineBooks.length){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1">No offline books yet.<br/>Add a book you're reading physically or offline!<br/><span style="color:var(--blue);font-size:.75rem">☁️ All books sync to your account</span></div>`;
+    return;
+  }
+  const grads=['var(--g1)','var(--g2)','var(--g3)','linear-gradient(135deg,#10b981,#0ea5e9)','linear-gradient(135deg,#a78bfa,#f59e0b)'];
+  grid.innerHTML=offlineBooks.map((b,i)=>{
+    const pct=Math.min(100,Math.round(((b.currentPage-1)/b.totalPages)*100));
+    const remaining=Math.max(0,b.totalPages-(b.currentPage-1));
+    const isDone=pct>=100;
+    const today=new Date().toDateString();
+    const updatedToday=b.lastUpdated===today;
+    return`<div class="off-book-card">
+      <button class="off-book-del" onclick="deleteOfflineBook('${b.id}',event)" title="Delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+      </button>
+      <div class="off-book-header">
+        <div class="off-book-emoji" style="background:${grads[i%grads.length]}">${b.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div class="off-book-title">${esc(b.name)}</div>
+          <div class="off-book-meta">p.${b.currentPage} / ${b.totalPages} · ${pct}% done</div>
+          <div style="display:flex;align-items:center;gap:.5rem;margin-top:.25rem;flex-wrap:wrap">
+            ${isDone?'<span class="off-done-badge">✓ Finished!</span>':''}
+            ${b.streak>0?`<span class="off-book-streak">🔥 ${b.streak}-day streak</span>`:''}
+            ${updatedToday&&!isDone?`<span style="font-size:.68rem;color:var(--green);font-weight:700">✓ Updated today</span>`:''}
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+          <span style="font-size:.72rem;color:var(--txt2)">Progress</span>
+          <span style="font-size:.88rem;font-weight:900;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${pct}%</span>
+        </div>
+        <div class="off-prog-bar"><div class="off-prog-fill" style="width:${pct}%"></div></div>
+        ${!isDone?`<div style="font-size:.7rem;color:var(--txt3);margin-top:.3rem">${remaining} pages remaining</div>`:''}
+      </div>
+      ${!isDone?`<div class="off-update-row">
+        <input type="number" class="off-page-inp" id="offInp_${b.id}" placeholder="Today's page (e.g. ${Math.min(b.currentPage+20,b.totalPages)})" min="${b.currentPage}" max="${b.totalPages}"/>
+        <button class="off-update-btn" onclick="updateOfflineProgress('${b.id}')">Update</button>
+      </div>`:`<div style="text-align:center;font-size:1.5rem;padding:.25rem">🎉</div>`}
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:.67rem;color:var(--txt3)">Added ${new Date(b.addedAt).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'})}</div>
+        <div style="font-size:.63rem;color:var(--txt3);display:flex;align-items:center;gap:.25rem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:9px;height:9px"><path d="M18 12.5V10a6 6 0 0 0-12 0v2.5"/><rect x="3" y="12" width="18" height="8" rx="2"/></svg>Synced
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function updateOfflineProgress(bookId){
+  const book=offlineBooks.find(b=>b.id===bookId);if(!book)return;
+  const inp=document.getElementById(`offInp_${bookId}`);
+  const newPage=parseInt(inp?.value);
+  if(!newPage||newPage<book.currentPage){showToast(`Enter a page number > ${book.currentPage}`);return;}
+  if(newPage>book.totalPages){showToast(`Max page is ${book.totalPages}`);return;}
+
+  const today=new Date().toDateString();
+  const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+  if(book.lastUpdated===yesterday.toDateString())book.streak=(book.streak||0)+1;
+  else if(book.lastUpdated!==today)book.streak=1;
+  else book.streak=book.streak||1;
+
+  const pagesRead=newPage-book.currentPage;
+  book.currentPage=newPage;
+  book.lastUpdated=today;
+  if(!book.log)book.log=[];
+  book.log.push({date:today,page:newPage,pagesRead});
+  if(book.log.length>90)book.log=book.log.slice(-90);
+
+  // Save to Firebase
+  try{
+    await saveOfflineBook(book);
+    buildOfflineBooks();
+    showToast(`📖 Progress saved! +${pagesRead} pages · synced ☁️`);
+  }catch(e){
+    showToast('⚠️ Save failed: '+e.message);
+  }
+
+  // Mark calendar day done if pages read >= goal
+  const minPages=calPlan?.minPages||parseInt(localStorage.getItem('rpdf_cal_min'))||20;
+  if(pagesRead>=minPages)localStorage.setItem(`rpdf_cal_done_${today}`,'1');
+}
+
+async function deleteOfflineBook(bookId,e){
+  e.stopPropagation();
+  try{
+    await deleteOfflineBookFromDB(bookId);
+    offlineBooks=offlineBooks.filter(b=>b.id!==bookId);
+    buildOfflineBooks();
+    showToast('🗑️ Book deleted');
+  }catch(err){showToast('⚠️ Delete failed: '+err.message);}
+}
 </script>
 </body>
 </html>
