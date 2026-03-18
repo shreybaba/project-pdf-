@@ -811,7 +811,7 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
     </div>
     <div class="lib-upload-zone fu" id="libUploadZone" onclick="triggerLibUpload()" ondragover="libDragOver(event)" ondragleave="libDragLeave(event)" ondrop="libDrop(event)">
       <div class="luz-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-      <div class="luz-text"><h3>Upload PDF to cloud library</h3><p>Saved to your account forever — open instantly from any device, no re-uploading ever ☁️</p></div>
+      <div class="luz-text"><h3>Save PDF to this device</h3><p>Saved in your browser forever — opens instantly next time, no re-uploading needed. Your reading progress syncs to your account ☁️</p></div>
       <button class="luz-btn" onclick="event.stopPropagation();triggerLibUpload()">Browse files</button>
     </div>
     <input type="file" id="libFileInp" accept=".pdf" style="display:none" onchange="handleLibFileChange(event)" multiple/>
@@ -923,9 +923,9 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
     <div class="pdf-viewer" id="pdfViewer">
       <div class="upload-ov" id="uploadOv">
         <div class="dz" id="dz" onclick="document.getElementById('fileInp').click()">
-          <div style="font-size:2.5rem;margin-bottom:.75rem">☁️</div>
+          <div style="font-size:2.5rem;margin-bottom:.75rem">📄</div>
           <h3>Open a PDF</h3>
-          <p>Drop a PDF here to open it<br/><strong style="color:var(--blue)">or go to Library tab to save it to your cloud</strong><br/><span style="color:var(--txt3);font-size:.72rem">Cloud PDFs open instantly — no re-uploading</span></p>
+          <p>Drop or pick a PDF to open it<br/><strong style="color:var(--blue)">Upload once via Library tab → opens instantly forever</strong><br/><span style="color:var(--txt3);font-size:.72rem">No Firebase Storage needed · No billing required</span></p>
           <input type="file" id="fileInp" accept=".pdf"/>
         </div>
       </div>
@@ -1052,21 +1052,7 @@ async function updateStreak(uid){
   await fb.updateDoc(ref,{streak,lastReadDate:today});
   userProfile.streak=streak;userProfile.lastReadDate=today;
 }
-async function uploadPDFToStorage(file,bookId){
-  return new Promise((resolve,reject)=>{
-    const path=`users/${currentUser.uid}/pdfs/${bookId}.pdf`;
-    const task=fb.uploadBytesResumable(fb.ref(fb.storage,path),file);
-    activeUploadTask=task;
-    const wrap=document.getElementById('upbWrap');
-    document.getElementById('upbName').textContent=file.name;wrap.classList.add('show');
-    task.on('state_changed',
-      s=>{const p=Math.round((s.bytesTransferred/s.totalBytes)*100);document.getElementById('upbFill').style.width=p+'%';document.getElementById('upbPct').textContent=p+'%';},
-      err=>{wrap.classList.remove('show');activeUploadTask=null;err.code==='storage/canceled'?resolve(null):reject(err);},
-      async()=>{wrap.classList.remove('show');activeUploadTask=null;resolve({url:await fb.getDownloadURL(task.snapshot.ref),path});}
-    );
-  });
-}
-function cancelUpload(){if(activeUploadTask){activeUploadTask.cancel();showToast('Upload cancelled');}}
+function cancelUpload(){hideFakeProgress();showToast('Cancelled');}
 async function loadPDFFromURL(url,bookName,savedPage){
   showPage('pgReader');setLoad(true,'Fetching from cloud…','');
   document.getElementById('loadBarWrap').classList.add('show');
@@ -1110,7 +1096,8 @@ async function saveBookMetadata(bookId,bookName,pageNum,chapterTitle,progress,ch
 async function deleteBookCompletely(bookId,storagePath){
   if(!currentUser)return;
   await fb.deleteDoc(fb.doc(fb.db,'users',currentUser.uid,'books',bookId));
-  if(storagePath){try{await fb.deleteObject(fb.ref(fb.storage,storagePath));}catch(e){}}
+  // Remove from IndexedDB too
+  try{await idbDelete(currentUser.uid,bookId);}catch(e){}
 }
 async function incrementStat(stat){
   if(!currentUser)return;
@@ -1282,7 +1269,7 @@ function renderBookGrid(){
   grid.innerHTML=filteredBooks.map((b,i)=>{
     const pct=b.progress||0,statusClass=pct>=95?'done':pct>0?'reading':'new',statusLabel=pct>=95?'✓ Complete':pct>0?'● Reading':'○ New';
     const lr=b.lastRead?.seconds?formatRelTime(b.lastRead.seconds*1000):'Never';
-    const cb=b.storageUrl?`<span class="cloud-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 12.5V10a6 6 0 0 0-12 0v2.5"/><rect x="3" y="12" width="18" height="8" rx="2"/></svg>Cloud</span>`:`<span class="cloud-badge no-cloud-badge">Local</span>`;
+    const cb=b.localSaved?`<span class="cloud-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>On device</span>`:`<span class="cloud-badge no-cloud-badge">Not saved</span>`;
     const btns=`<button class="bca-btn" onclick="event.stopPropagation();openBookFromLibrary('${b.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button><button class="bca-btn del" onclick="event.stopPropagation();showDelModal('${b.id}','${esc(b.name)}','${b.storagePath||''}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>`;
     if(libView==='list')return`<div class="book-card" onclick="openBookDetail('${b.id}')"><div class="bc-thumb" style="background:${grads[i%grads.length]}">${b.emoji||'📖'}</div><div class="bc-body"><div class="bc-title">${esc(b.name)}</div><div class="bc-prog-row"><div class="bc-prog-bar"><div class="bc-prog-fill" style="width:${pct}%"></div></div><span class="bc-prog-pct">${pct}%</span></div><div class="bc-footer"><span class="bc-status ${statusClass}">${statusLabel}</span><div class="bc-actions">${btns}</div></div></div><div style="font-size:.65rem;color:var(--txt3);padding-right:.8rem;display:flex;flex-direction:column;align-items:flex-end;gap:4px">${cb}<span>${lr}</span></div></div>`;
     return`<div class="book-card" onclick="openBookDetail('${b.id}')"><div class="bc-thumb" style="background:${grads[i%grads.length]}">${b.emoji||'📖'}</div><div class="bc-body"><div class="bc-title">${esc(b.name)}</div><div class="bc-meta">${cb} · p.${b.currentPage||1} · ${lr}</div><div class="bc-prog-row"><div class="bc-prog-bar"><div class="bc-prog-fill" style="width:${pct}%"></div></div><span class="bc-prog-pct">${pct}%</span></div><div class="bc-footer"><span class="bc-status ${statusClass}">${statusLabel}</span><div class="bc-actions">${btns}</div></div></div></div>`;
@@ -1318,66 +1305,59 @@ async function confirmDelete(){
 function triggerLibUpload(){document.getElementById('libFileInp').click();}
 async function handleLibFileChange(e){
   const files=[...e.target.files];e.target.value='';if(!files.length)return;
-  // ALL files: upload to cloud first, then open the first one
-  if(files.length===1){
-    showToast('☁️ Uploading to cloud first…');
-    switchTab('lib');
-    const bookId=await uploadOnlyToLibrary(files[0]);
-    if(bookId){
-      allBooks=await loadAllBooks();
-      const book=allBooks.find(b=>b.id===bookId);
-      if(book?.storageUrl){await loadPDFFromURL(book.storageUrl,book.name,1);}
-      else{goReader();setTimeout(()=>loadPDF(files[0]),100);}
-    }else{goReader();setTimeout(()=>loadPDF(files[0]),100);}
-  } else {
-    switchTab('lib');
-    for(const f of files)await uploadOnlyToLibrary(f);
-    buildLibrary();showToast(`✓ ${files.length} PDFs saved to cloud!`);
-  }
+  switchTab('lib');
+  for(const f of files)await saveToLibraryIDB(f);
+  buildLibrary();
+  if(files.length===1)showToast('✅ Saved! Opens instantly next time');
+  else showToast(`✅ ${files.length} PDFs saved to this device!`);
 }
-async function uploadOnlyToLibrary(file){
+
+async function saveToLibraryIDB(file){
   if(!currentUser||!file)return null;
   const fname=file.name.replace(/\.pdf$/i,'').trim();
 
-  // Find existing book by name (case-insensitive) to avoid duplicates
+  // Check for existing book by name
   const booksRef=fb.collection(fb.db,'users',currentUser.uid,'books');
   const snap=await fb.getDocs(booksRef);
-  let existingId=null,existingHasCloud=false;
+  let existingId=null,alreadySaved=false;
   snap.forEach(d=>{
     if(d.data().name.toLowerCase()===fname.toLowerCase()){
       existingId=d.id;
-      existingHasCloud=!!d.data().storageUrl;
+      alreadySaved=!!d.data().localSaved;
     }
   });
 
-  // If already cloud-saved, skip re-upload
-  if(existingId&&existingHasCloud){
-    showToast(`☁️ "${fname}" already in cloud — no re-upload needed!`);
-    return existingId;
+  if(existingId&&alreadySaved){
+    // Check if actually in IDB
+    const has=await idbHas(currentUser.uid,existingId);
+    if(has){showToast(`✅ "${fname}" already saved on this device!`);return existingId;}
   }
 
   const bookId=existingId||fb.doc(booksRef).id;
-  try{
-    const result=await uploadPDFToStorage(file,bookId);
-    if(!result)return null;
 
-    // Merge storageUrl into existing doc OR create new one
+  // Show progress in upload bar
+  showFakeProgress(file.name);
+  document.getElementById('upbFill').style.width='30%';
+  document.getElementById('upbPct').textContent='Saving…';
+
+  try{
+    await idbSave(currentUser.uid,bookId,file);
+    document.getElementById('upbFill').style.width='80%';
+
+    // Save metadata to Firestore
     const docData={
-      name:fname,
-      storageUrl:result.url,
-      storagePath:result.path,
+      name:fname,localSaved:true,emoji:getBookEmoji(fname),
       lastRead:fb.serverTimestamp(),
-      emoji:getBookEmoji(fname),
     };
     if(!existingId){
-      // New book — set full data
       Object.assign(docData,{currentPage:1,currentChapter:'',progress:0,totalPages:0,chapters:[],openedAt:fb.serverTimestamp()});
     }
     await fb.setDoc(fb.doc(fb.db,'users',currentUser.uid,'books',bookId),docData,{merge:true});
-    showToast(`☁️ "${fname}" saved — opens instantly next time!`);
+    hideFakeProgress();
     return bookId;
   }catch(err){
-    showToast('⚠️ Upload failed: '+err.message);
+    hideFakeProgress();
+    showToast('⚠️ Save failed: '+err.message);
     return null;
   }
 }
@@ -1386,19 +1366,10 @@ function libDragLeave(){document.getElementById('libUploadZone').classList.remov
 async function libDrop(e){
   e.preventDefault();document.getElementById('libUploadZone').classList.remove('over');
   const files=[...e.dataTransfer.files].filter(f=>f.type==='application/pdf');if(!files.length)return;
-  if(files.length===1){
-    showToast('☁️ Uploading to cloud…');
-    const bookId=await uploadOnlyToLibrary(files[0]);
-    if(bookId){
-      allBooks=await loadAllBooks();
-      const book=allBooks.find(b=>b.id===bookId);
-      if(book?.storageUrl)await loadPDFFromURL(book.storageUrl,book.name,book.currentPage||1);
-      else{goReader();setTimeout(()=>loadPDF(files[0]),100);}
-    }
-  } else {
-    for(const f of files)await uploadOnlyToLibrary(f);
-    buildLibrary();showToast(`✓ ${files.length} PDFs saved to cloud!`);
-  }
+  switchTab('lib');
+  for(const f of files)await saveToLibraryIDB(f);
+  buildLibrary();
+  showToast(`✅ ${files.length} PDF${files.length>1?'s':''} saved to this device!`);
 }
 
 /* DASHBOARD BUILDERS */
@@ -1407,7 +1378,7 @@ function buildCurrentBook(book){
   if(!book){el.className='empty-state';el.innerHTML='No book open yet.<br/>Click "Add PDF" to get started!';return;}
   el.className='';
   const chs=(book.chapters||[]).slice(0,10);const curChIdx=chs.findIndex(c=>c.page>book.currentPage)-1;
-  el.innerHTML=`<div class="book-row"><div class="b-cover" style="background:var(--g1)">${book.emoji||'📖'}</div><div class="b-info"><div class="b-title">${esc(book.name)}</div><div class="b-meta">${book.totalPages||'?'} pages${book.storageUrl?' · ☁️':''}</div><div class="b-ch-tag">${esc(book.currentChapter||'Reading…')} · p.${book.currentPage}</div></div></div><div><div class="prog-row"><span class="prog-lbl">Progress</span><span class="prog-pct">${book.progress||0}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${book.progress||0}%"></div></div></div>${chs.length?`<div style="margin-top:.25rem"><div class="sec-lbl" style="margin-bottom:.35rem">Chapters</div><div class="ch-mini">${chs.map((c,i)=>{const done=c.page<book.currentPage;const cur=i===curChIdx||(i===0&&curChIdx<0);return`<div class="ch-mi ${cur?'cur':''}"><span class="cn">${i+1}</span><span class="ct">${esc(c.title)}</span><span class="cd" style="background:${done?'var(--blue)':cur?'var(--violet)':'var(--s3)'}"></span></div>`;}).join('')}</div></div>`:''}<button class="btn-continue" style="margin-top:.5rem" onclick="openBookFromLibrary('${book.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${book.storageUrl?'Continue from Cloud ☁️':'Continue Reading'}</button>`;
+  el.innerHTML=`<div class="book-row"><div class="b-cover" style="background:var(--g1)">${book.emoji||'📖'}</div><div class="b-info"><div class="b-title">${esc(book.name)}</div><div class="b-meta">${book.totalPages||'?'} pages${book.localSaved?' · 💾 saved':''}</div><div class="b-ch-tag">${esc(book.currentChapter||'Reading…')} · p.${book.currentPage}</div></div></div><div><div class="prog-row"><span class="prog-lbl">Progress</span><span class="prog-pct">${book.progress||0}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${book.progress||0}%"></div></div></div>${chs.length?`<div style="margin-top:.25rem"><div class="sec-lbl" style="margin-bottom:.35rem">Chapters</div><div class="ch-mini">${chs.map((c,i)=>{const done=c.page<book.currentPage;const cur=i===curChIdx||(i===0&&curChIdx<0);return`<div class="ch-mi ${cur?'cur':''}"><span class="cn">${i+1}</span><span class="ct">${esc(c.title)}</span><span class="cd" style="background:${done?'var(--blue)':cur?'var(--violet)':'var(--s3)'}"></span></div>`;}).join('')}</div></div>`:''}<button class="btn-continue" style="margin-top:.5rem" onclick="openBookFromLibrary('${book.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${book.localSaved?'Continue Reading 💾':'Continue Reading'}</button>`;
 }
 function buildRecentBooks(books){
   const el=document.getElementById('recList');
@@ -1483,17 +1454,175 @@ async function callGemini(prompt,tokens=400,temp=0.3){
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-/* PDF LOADING */
-document.getElementById('fileInp').addEventListener('change',e=>{if(e.target.files[0])loadPDF(e.target.files[0]);});
+/* ═══════════════════════════════════════
+   INDEXEDDB — stores PDFs locally forever
+   No Firebase Storage needed, no billing
+═══════════════════════════════════════ */
+const IDB_NAME='ReadPDF_Store',IDB_VER=1,IDB_STORE='pdfs';
+let _idb=null;
+
+function openIDB(){
+  if(_idb)return Promise.resolve(_idb);
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(IDB_NAME,IDB_VER);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore(IDB_STORE,{keyPath:'id'});
+    req.onsuccess=e=>{_idb=e.target.result;res(_idb);};
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+async function idbSave(uid,bookId,file){
+  const db=await openIDB();
+  const key=`${uid}_${bookId}`;
+  const buf=await file.arrayBuffer();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put({id:key,name:file.name,buf,savedAt:Date.now()});
+    tx.oncomplete=()=>res(key);
+    tx.onerror=e=>rej(e.target.error);
+  });
+}
+
+async function idbLoad(uid,bookId){
+  const db=await openIDB();
+  const key=`${uid}_${bookId}`;
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE,'readonly');
+    const req=tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess=e=>res(e.target.result||null);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+async function idbDelete(uid,bookId){
+  const db=await openIDB();
+  const key=`${uid}_${bookId}`;
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).delete(key);
+    tx.oncomplete=res;tx.onerror=e=>rej(e.target.error);
+  });
+}
+
+async function idbHas(uid,bookId){
+  const rec=await idbLoad(uid,bookId).catch(()=>null);
+  return!!rec;
+}
+
+/* Show upload progress using the existing bar UI */
+function showFakeProgress(name){
+  const wrap=document.getElementById('upbWrap');
+  document.getElementById('upbName').textContent=name;
+  document.getElementById('upbFill').style.width='0%';
+  document.getElementById('upbPct').textContent='0%';
+  wrap.classList.add('show');
+}
+function hideFakeProgress(){document.getElementById('upbWrap').classList.remove('show');}
+function cancelUpload(){hideFakeProgress();showToast('Cancelled');}
+
+/* ═══════════════════════════════════════
+   OPEN BOOK — from IndexedDB or file picker
+═══════════════════════════════════════ */
+async function openBookById(bookId,bookName,savedPage){
+  showPage('pgReader');
+  // Try IndexedDB first
+  try{
+    const rec=await idbLoad(currentUser.uid,bookId);
+    if(rec&&rec.buf){
+      setLoad(true,'Opening from local storage…','');
+      document.getElementById('rFileName').textContent=bookName+'.pdf';
+      document.getElementById('zoomCtl').style.display='flex';
+      synCache={};allChapters=[];
+      pdfDoc=await pdfjsLib.getDocument({data:rec.buf}).promise;
+      totalPages=pdfDoc.numPages;
+      updatePageDisplay(savedPage||1);
+      await renderPages();setLoad(false);
+      await extractText();
+      const chs=await detectChapters();
+      allChapters=chs;chapters=[...chs];renderChList(chapters);
+      document.getElementById('chCnt').textContent=`${chs.length} found`;
+      setupScroll();
+      if(savedPage&&savedPage>1)setTimeout(()=>goPage(savedPage),500);
+      showToast('📖 Opened from your device!');
+      return;
+    }
+  }catch(e){console.warn('IDB load failed',e);}
+
+  // Not in IndexedDB — ask user to pick the file
+  setLoad(false);
+  document.getElementById('uploadOv').classList.remove('off');
+  document.getElementById('rFileName').textContent='Pick file to open: '+bookName+'.pdf';
+
+  // Show a targeted message
+  showToast(`📂 Please select "${bookName}.pdf" to open it on this device`);
+
+  // Store context so when they pick the file, we know which book
+  window._pendingBookId=bookId;
+  window._pendingBookName=bookName;
+  window._pendingBookPage=savedPage;
+}
+
+async function openBookFromLibrary(bookId){
+  closeBookDetailDirect();
+  const book=allBooks.find(b=>b.id===bookId);
+  if(!book)return;
+  await openBookById(book.id,book.name,book.currentPage||1);
+}
+
+/* ═══════════════════════════════════════
+   PDF LOADING — saves to IndexedDB
+═══════════════════════════════════════ */
+document.getElementById('fileInp').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  // If user was prompted to pick a specific book file
+  if(window._pendingBookId){
+    await loadPDFwithContext(f,window._pendingBookId,window._pendingBookName,window._pendingBookPage);
+    window._pendingBookId=null;window._pendingBookName=null;window._pendingBookPage=null;
+  } else {
+    loadPDF(f);
+  }
+});
 const dz=document.getElementById('dz');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
 dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');const f=e.dataTransfer.files[0];if(f?.type==='application/pdf')loadPDF(f);});
 
+async function loadPDFwithContext(file,bookId,bookName,savedPage){
+  document.getElementById('uploadOv').classList.add('off');
+  setLoad(true,'Loading PDF…','');
+  document.getElementById('rFileName').textContent=file.name;
+  document.getElementById('zoomCtl').style.display='flex';
+  synCache={};allChapters=[];
+  const buf=await file.arrayBuffer();
+  pdfDoc=await pdfjsLib.getDocument({data:buf}).promise;
+  totalPages=pdfDoc.numPages;
+  updatePageDisplay(savedPage||1);
+  await renderPages();setLoad(false);
+  await extractText();
+  const chs=await detectChapters();
+  allChapters=chs;chapters=[...chs];renderChList(chapters);
+  document.getElementById('chCnt').textContent=`${chs.length} found`;
+  setupScroll();
+  if(savedPage&&savedPage>1)setTimeout(()=>goPage(savedPage),500);
+
+  // Save to IndexedDB so it opens instantly next time
+  if(currentUser){
+    showToast('💾 Saving to this device…');
+    showFakeProgress(file.name);
+    try{
+      await idbSave(currentUser.uid,bookId,file);
+      hideFakeProgress();
+      // Mark as locally saved in Firestore
+      await fb.updateDoc(fb.doc(fb.db,'users',currentUser.uid,'books',bookId),{localSaved:true,lastRead:fb.serverTimestamp()});
+      showToast('✅ Saved! Opens instantly next time on this device');
+    }catch(err){hideFakeProgress();showToast('⚠️ Could not save locally: '+err.message);}
+  }
+}
+
 async function loadPDF(file){
   document.getElementById('uploadOv').classList.add('off');
   setLoad(true,'Loading PDF…','');document.getElementById('loadBarWrap').classList.remove('show');
-  const fname=file.name.replace('.pdf','');
+  const fname=file.name.replace(/\.pdf$/i,'').trim();
   document.getElementById('rFileName').textContent=file.name;
   document.getElementById('zoomCtl').style.display='flex';
   synCache={};allChapters=[];
@@ -1508,15 +1637,29 @@ async function loadPDF(file){
   allChapters=chs;chapters=[...chs];renderChList(chapters);
   document.getElementById('chCnt').textContent=`${chs.length} found`;
   setupScroll();
+
   if(currentUser){
     await updateStreak(currentUser.uid);
+    // Find or create book record
     const booksRef=fb.collection(fb.db,'users',currentUser.uid,'books');
-    const snap=await fb.getDocs(booksRef);let bookId=null;
-    snap.forEach(d=>{if(d.data().name===fname)bookId=d.id;});
+    const snap=await fb.getDocs(booksRef);
+    let bookId=null;
+    snap.forEach(d=>{if(d.data().name.toLowerCase()===fname.toLowerCase())bookId=d.id;});
     if(!bookId)bookId=fb.doc(booksRef).id;
     await saveBookMetadata(bookId,fname,1,chs[0]?.title||'',0,chs,null,null);
-    showToast('📖 Added to library — uploading to cloud…');
-    try{const result=await uploadPDFToStorage(file,bookId);if(result){await saveBookMetadata(bookId,fname,currentPage,chs[0]?.title||'',0,chs,result.url,result.path);showToast('☁️ Saved to cloud!');}}catch(err){showToast('⚠️ Cloud save failed.');}
+
+    // Save PDF to IndexedDB — device-local, instant next open
+    showToast('💾 Saving to this device for instant access…');
+    showFakeProgress(file.name);
+    try{
+      await idbSave(currentUser.uid,bookId,file);
+      hideFakeProgress();
+      await fb.updateDoc(fb.doc(fb.db,'users',currentUser.uid,'books',bookId),{localSaved:true});
+      showToast('✅ Saved! Next time opens instantly — no re-upload needed');
+    }catch(err){
+      hideFakeProgress();
+      showToast('📖 Opened! (could not cache locally: '+err.message+')');
+    }
   }
 }
 
