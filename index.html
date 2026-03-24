@@ -641,6 +641,39 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
 .off-update-btn:hover{opacity:.88}
 .off-book-streak{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--amber);font-weight:700}
 .off-done-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:99px;background:rgba(16,185,129,0.1);color:var(--green);border:1px solid rgba(16,185,129,0.2)}
+
+/* ═══ AI ASSISTANT ═══ */
+.ai-tab-badge{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:linear-gradient(135deg,#4285f4,#7c3aed);box-shadow:0 0 6px rgba(66,133,244,0.7)}
+.ai-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.3rem}
+.ai-chip{padding:5px 11px;background:rgba(66,133,244,0.07);border:1px solid rgba(66,133,244,0.18);border-radius:99px;font-size:.73rem;color:rgba(238,238,255,0.75);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:Arial,sans-serif}
+.ai-chip:hover{background:rgba(66,133,244,0.14);color:var(--txt);border-color:rgba(66,133,244,0.35)}
+.ai-msgs-area{flex:1;overflow-y:auto;padding:1.25rem 1.75rem;display:flex;flex-direction:column;gap:1rem;scroll-behavior:smooth}
+.ai-msgs-area::-webkit-scrollbar{width:4px}
+.ai-msgs-area::-webkit-scrollbar-thumb{background:#ffffff12;border-radius:99px}
+.ai-msg{display:flex;gap:.65rem;align-items:flex-start;animation:fadein .25s ease}
+.ai-msg-avatar{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#4285f4,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;box-shadow:0 2px 8px rgba(66,133,244,0.3)}
+.ai-msg-user .ai-msg-avatar{background:var(--g2)}
+.ai-msg-bubble{max-width:80%;padding:.75rem 1rem;border-radius:14px;font-size:.88rem;line-height:1.65;color:var(--txt)}
+.ai-msg-bot .ai-msg-bubble{background:var(--s1);border:1px solid var(--bdr);border-top-left-radius:4px}
+.ai-msg-user .ai-msg-bubble{background:linear-gradient(135deg,rgba(66,133,244,0.18),rgba(124,58,237,0.18));border:1px solid rgba(66,133,244,0.2);border-top-right-radius:4px;margin-left:auto}
+.ai-msg-user{flex-direction:row-reverse}
+.ai-msg-bubble p{margin:0}
+.ai-msg-bubble strong{color:var(--txt);font-weight:700}
+.ai-msg-bubble ul,.ai-msg-bubble ol{margin:.35rem 0 .35rem 1.2rem;padding:0;display:flex;flex-direction:column;gap:.2rem}
+.ai-msg-bubble li{font-size:.86rem}
+.ai-typing{display:flex;align-items:center;gap:4px;padding:.6rem .85rem}
+.ai-typing span{width:7px;height:7px;border-radius:50%;background:var(--txt3);animation:aiDot 1.2s ease infinite}
+.ai-typing span:nth-child(2){animation-delay:.2s}
+.ai-typing span:nth-child(3){animation-delay:.4s}
+@keyframes aiDot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.ai-input-area{padding:.85rem 1.75rem 1rem;border-top:1px solid var(--bdr);flex-shrink:0;background:rgba(12,12,18,0.6);backdrop-filter:blur(8px)}
+.ai-input-row{display:flex;align-items:flex-end;gap:.6rem;background:var(--s1);border:1.5px solid var(--bdr2);border-radius:14px;padding:.55rem .55rem .55rem .95rem;transition:border-color .2s}
+.ai-input-row:focus-within{border-color:rgba(66,133,244,0.4);box-shadow:0 0 0 3px rgba(66,133,244,0.08)}
+.ai-textarea{flex:1;background:none;border:none;outline:none;color:var(--txt);font-size:.9rem;font-family:Arial,sans-serif;resize:none;max-height:120px;line-height:1.5;padding:.25rem 0}
+.ai-textarea::placeholder{color:var(--txt3)}
+.ai-send-btn{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#4285f4,#7c3aed);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;box-shadow:0 2px 10px rgba(66,133,244,0.35)}
+.ai-send-btn:hover{transform:scale(1.06);box-shadow:0 4px 16px rgba(66,133,244,0.5)}
+.ai-send-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 </style>
 </head>
 <body>
@@ -713,6 +746,10 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
       </button>
       <button class="nav-tab" id="tabLib" onclick="switchTab('lib')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Library
+      </button>
+      <button class="nav-tab" id="tabAi" onclick="switchTab('ai')" style="position:relative">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI Chat
+        <span class="ai-tab-badge">✦</span>
       </button>
     </div>
     <div class="d-right">
@@ -894,6 +931,57 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
       <div class="empty-state" style="grid-column:1/-1">No offline books yet.<br/>Add a book you're reading physically or offline!</div>
     </div>
   </div>
+
+  <!-- ═══ AI ASSISTANT PANEL ═══ -->
+  <div id="aiPanel" class="dash-body" style="display:none;flex-direction:column;gap:0;padding:0;overflow:hidden">
+    <div style="display:flex;flex-direction:column;height:100%;overflow:hidden">
+      <!-- Header bar -->
+      <div class="ai-chat-header fu" style="padding:1.25rem 1.75rem 1rem;flex-shrink:0;border-bottom:1px solid var(--bdr)">
+        <div style="display:flex;align-items:center;gap:.85rem;margin-bottom:.5rem">
+          <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#4285f4,#7c3aed);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(66,133,244,0.35);flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:18px;height:18px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div>
+            <div style="font-size:1.05rem;font-weight:900;color:var(--txt)">Gemini AI Assistant</div>
+            <div style="font-size:.72rem;color:var(--txt2);margin-top:1px">Powered by Google Gemini · Your reading companion</div>
+          </div>
+          <button id="aiClearBtn" onclick="clearAiChat()" title="Clear chat" style="margin-left:auto;background:none;border:1px solid var(--bdr);border-radius:7px;padding:5px 10px;cursor:pointer;color:var(--txt2);font-size:.72rem;font-family:Arial,sans-serif;display:flex;align-items:center;gap:4px;transition:all .15s">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Clear
+          </button>
+        </div>
+        <!-- Suggested prompts -->
+        <div class="ai-chips" id="aiChipsBar">
+          <div class="ai-chip" onclick="useAiChip(this)">📖 Recommend a book</div>
+          <div class="ai-chip" onclick="useAiChip(this)">🧠 How to read faster?</div>
+          <div class="ai-chip" onclick="useAiChip(this)">💡 Learning tips</div>
+          <div class="ai-chip" onclick="useAiChip(this)">📝 Note-taking methods</div>
+          <div class="ai-chip" onclick="useAiChip(this)">🌍 Best books of 2024</div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="ai-msgs-area" id="aiMsgsArea">
+        <div class="ai-msg ai-msg-bot">
+          <div class="ai-msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+          <div class="ai-msg-bubble">
+            <p>👋 Hi! I'm your Gemini AI reading assistant.</p>
+            <p style="margin-top:.4rem">I can help you with <strong>book recommendations</strong>, <strong>reading strategies</strong>, <strong>summaries</strong>, and anything else about your reading journey. What's on your mind?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input area -->
+      <div class="ai-input-area" id="aiInputArea">
+        <div class="ai-input-row">
+          <textarea id="aiTa" class="ai-textarea" placeholder="Ask anything about books, reading, or your library…" rows="1" onkeydown="aiKey(event)" oninput="aiResize(this)"></textarea>
+          <button class="ai-send-btn" id="aiSendBtn" onclick="sendAiMessage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div style="font-size:.63rem;color:var(--txt3);text-align:center;margin-top:.4rem">API key stored securely in Cloud Functions · Never in HTML</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════ PDF READER ═══════════ -->
@@ -914,8 +1002,7 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
       <span class="zoom-val" id="zoomVal">100%</span>
       <button onclick="changeZoom(0.15)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     </div>
-    <button class="back-btn" onclick="showApiModal()" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>API Key</button>
-    <button class="back-btn" onclick="toggleThumbs()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Pages</button>
+    <button class="back-btn" onclick="toggleThumbs()" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Pages</button>
   </div>
   <div class="r-prog"><div class="r-pfill" id="rPfill"></div></div>
   <div class="r-main">
@@ -980,7 +1067,6 @@ html,body{height:100%;font-family:Arial,sans-serif;background:var(--bg);color:va
 </div>
 
 <!-- Modals -->
-<div class="api-ov off" id="apiOv"><div class="api-modal"><h3>Gemini API Key</h3><p>Saved in your browser only — never in the file.</p><div class="api-steps"><strong>Get a free key:</strong><br/>1. Go to <strong>aistudio.google.com/apikey</strong><br/>2. Click <strong>Create API key</strong><br/>3. Paste below</div><div class="api-err" id="apiErr"></div><input class="api-inp" id="apiInp" type="password" placeholder="AIzaSy… paste your key here"/><div class="api-btns"><button class="api-save" onclick="saveGeminiKey()">Save & Continue</button><button class="api-skip" onclick="hideApiModal()">Skip</button></div><div class="api-note"><span>🔒 Browser only</span><button onclick="clearGeminiKey()">Clear key</button></div></div></div>
 <div class="del-modal-ov off" id="delOv"><div class="del-modal"><div class="del-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div><h3>Delete this book?</h3><p>Permanently removes <span id="delBookName" style="font-weight:800;color:var(--txt)">"Book"</span> and the stored PDF.</p><div class="del-btns"><button class="del-cancel" onclick="hideDelModal()">Cancel</button><button class="del-confirm" id="delConfirmBtn" onclick="confirmDelete()">Delete</button></div></div></div>
 <div class="book-detail-ov off" id="bookDetailOv" onclick="closeBookDetailOutside(event)"><div class="book-detail" id="bookDetailModal"></div></div>
 <div class="toast" id="toast"></div>
@@ -990,7 +1076,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/p
 
 /* STATE */
 let fb=null,currentUser=null,userProfile=null;
-let GEMINI_KEY='';
 const GEMINI_MODEL='gemini-1.5-flash';
 let pdfDoc=null,totalPages=0,scale=1.4;
 let allChapters=[],chapters=[],currentPage=1;
@@ -1000,15 +1085,12 @@ let allBooks=[],filteredBooks=[];
 let libView='grid',libSort='recent',activeTab='dash';
 let pendingDeleteId=null,pendingDeleteStoragePath=null,pendingDeleteName=null;
 let activeUploadTask=null;
-let _gemQ=Promise.resolve(),_lastCall=0;
-const GAP=4500;
 
 function waitForFb(){return new Promise(r=>{if(window._fbReady){r(window._fb);return;}document.addEventListener('fb-ready',()=>r(window._fb),{once:true});})}
 
 /* INIT */
 (async()=>{
   fb=await waitForFb();
-  try{const k=localStorage.getItem('rpdf_key');if(k?.startsWith('AIza')){GEMINI_KEY=k;document.getElementById('apiInp').value=k;}}catch(e){}
   fb.onAuthStateChanged(fb.auth,async user=>{
     if(user){currentUser=user;await loadUserProfile(user);showPage('pgDash');buildDash();}
     else{currentUser=null;userProfile=null;showPage('pgLogin');}
@@ -1018,8 +1100,8 @@ function waitForFb(){return new Promise(r=>{if(window._fbReady){r(window._fb);re
 /* TAB */
 function switchTab(tab){
   activeTab=tab;
-  const tabs=['tabDash','tabCal','tabOffline','tabLib'];
-  const panels={dash:'dashPanel',cal:'calPanel',offline:'offlinePanel',lib:'libPanel'};
+  const tabs=['tabDash','tabCal','tabOffline','tabLib','tabAi'];
+  const panels={dash:'dashPanel',cal:'calPanel',offline:'offlinePanel',lib:'libPanel',ai:'aiPanel'};
   tabs.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
   const activeTabEl=document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1));
   if(activeTabEl)activeTabEl.classList.add('active');
@@ -1029,6 +1111,7 @@ function switchTab(tab){
   if(tab==='lib')buildLibrary();
   if(tab==='cal')buildCalendar();
   if(tab==='offline')buildOfflineBooks();
+  if(tab==='ai'){document.getElementById('aiPanel').style.flexDirection='column';setTimeout(()=>scrollAiToBottom(),50);}
 }
 
 /* FIRESTORE */
@@ -1171,10 +1254,6 @@ async function fetchQuote(force=false){
   const now=Date.now();
   if(!force&&quoteCache&&(now-lastQuoteFetch)<3600000){renderQuote(quoteCache);return;}
   document.getElementById('quoteContent').innerHTML=`<div class="quote-loading-el"><div class="q-spin"></div><span>Fetching inspiration…</span></div>`;
-  if(!GEMINI_KEY){
-    const fb=FALLBACK_QUOTES[Math.floor(Math.random()*FALLBACK_QUOTES.length)];
-    quoteCache=fb;lastQuoteFetch=now;renderQuote(fb);return;
-  }
   try{
     const raw=await callGemini(`Give me one powerful inspirational quote about reading, books, or learning. Reply ONLY in this exact JSON format with no extra text: {"quote":"the quote text here","author":"Author Name"}`,150,0.9);
     const clean=raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
@@ -1425,34 +1504,174 @@ function goDash(){showPage('pgDash');switchTab('dash');if(currentUser)buildDash(
 function goLibrary(){showPage('pgDash');switchTab('lib');}
 function goReader(){showPage('pgReader');}
 
-/* GEMINI API */
-function saveGeminiKey(){
-  const k=document.getElementById('apiInp').value.trim(),err=document.getElementById('apiErr');
-  if(!k.startsWith('AIza')){err.textContent='Invalid key — must start with "AIza"';err.classList.add('show');return;}
-  err.classList.remove('show');GEMINI_KEY=k;try{localStorage.setItem('rpdf_key',k);}catch(e){}
-  hideApiModal();showToast('✦ Gemini key saved!');
-  document.getElementById('rBadge').textContent='✦ Gemini Ready';document.getElementById('rBadge').style.display='';
-}
-function clearGeminiKey(){try{localStorage.removeItem('rpdf_key');}catch(e){}GEMINI_KEY='';document.getElementById('apiInp').value='';}
-function showApiModal(){document.getElementById('apiOv').classList.remove('off');}
-function hideApiModal(){document.getElementById('apiOv').classList.add('off');}
-
+/* GEMINI API — all calls go through the Cloud Function proxy */
 async function callGemini(prompt,tokens=400,temp=0.3){
-  if(!GEMINI_KEY)throw new Error('NO_KEY');
-  _gemQ=_gemQ.then(async()=>{const d=Date.now()-_lastCall;if(_lastCall&&d<GAP)await sleep(GAP-d);});
-  await _gemQ;
-  for(let i=0;i<4;i++){
-    if(i>0)await sleep([0,15000,30000,60000][i]);
-    _lastCall=Date.now();
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:temp,maxOutputTokens:tokens}})});
-    if(res.status===429)continue;
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${res.status}`);}
-    const data=await res.json();const txt=data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if(!txt)throw new Error('Empty');return txt;
-  }
-  throw new Error('RATE_LIMIT');
+  let idToken='';
+  try{idToken=await currentUser.getIdToken();}catch(e){}
+  const res=await fetch(GEMINI_PROXY_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken},
+    body:JSON.stringify({messages:[{role:'user',content:prompt}],generationConfig:{temperature:temp,maxOutputTokens:tokens}})
+  });
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error||`HTTP ${res.status}`);}
+  const data=await res.json();
+  if(!data.text)throw new Error('Empty');
+  return data.text;
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ═══════════════════════════════════════
+   AI ASSISTANT — calls Cloud Function proxy
+   Gemini key is stored securely server-side,
+   NEVER hardcoded in this HTML file.
+═══════════════════════════════════════ */
+
+// ── IMPORTANT: replace this with your deployed Cloud Function URL ──
+// Run: firebase deploy --only functions
+// Then find the URL in Firebase Console → Functions
+const GEMINI_PROXY_URL = 'https://us-central1-reader-81afe.cloudfunctions.net/geminiProxy';
+
+let aiHistory = []; // {role:'user'|'assistant', content:'...'}
+let aiTyping = false;
+
+function escAi(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function formatAiText(text){
+  // Convert markdown-like syntax to HTML
+  return text
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^#{1,3} (.+)$/gm,'<strong>$1</strong>')
+    .replace(/^[\*\-] (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs,'<ul>$1</ul>')
+    .replace(/\n\n+/g,'</p><p>')
+    .replace(/\n/g,'<br>')
+    .replace(/^(.+)$/,'<p>$1</p>')
+    .replace(/<p><\/p>/g,'');
+}
+
+function scrollAiToBottom(){
+  const area=document.getElementById('aiMsgsArea');
+  if(area)area.scrollTop=area.scrollHeight;
+}
+
+function appendAiMsg(role,html){
+  const area=document.getElementById('aiMsgsArea');
+  const isBot=role==='bot';
+  const div=document.createElement('div');
+  div.className=`ai-msg ${isBot?'ai-msg-bot':'ai-msg-user'}`;
+  const avatarSvg=isBot
+    ?`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
+    :`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  div.innerHTML=`<div class="ai-msg-avatar">${avatarSvg}</div><div class="ai-msg-bubble">${html}</div>`;
+  area.appendChild(div);
+  scrollAiToBottom();
+  return div;
+}
+
+function showAiTyping(){
+  const area=document.getElementById('aiMsgsArea');
+  const div=document.createElement('div');
+  div.className='ai-msg ai-msg-bot';
+  div.id='aiTypingIndicator';
+  div.innerHTML=`<div class="ai-msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="ai-msg-bubble"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
+  area.appendChild(div);
+  scrollAiToBottom();
+}
+
+function removeAiTyping(){
+  const el=document.getElementById('aiTypingIndicator');
+  if(el)el.remove();
+}
+
+async function sendAiMessage(){
+  if(aiTyping)return;
+  const ta=document.getElementById('aiTa');
+  const msg=ta.value.trim();
+  if(!msg)return;
+
+  ta.value='';aiResize(ta);
+  appendAiMsg('user',escAi(msg));
+  aiHistory.push({role:'user',content:msg});
+
+  // Hide chip suggestions after first message
+  const chips=document.getElementById('aiChipsBar');
+  if(chips)chips.style.display='none';
+
+  aiTyping=true;
+  document.getElementById('aiSendBtn').disabled=true;
+  showAiTyping();
+
+  // Build system prompt with user context
+  const userName=userProfile?.name||currentUser?.displayName||'Reader';
+  const streak=userProfile?.streak||0;
+  const booksCount=allBooks?.length||0;
+  const systemPrompt=`You are a friendly, knowledgeable AI reading assistant inside the ReadPDF app. 
+The user's name is ${userName}. They have ${booksCount} books in their library and a ${streak}-day reading streak.
+Help them with book recommendations, reading strategies, summaries, comprehension, note-taking, and general knowledge.
+Be warm, encouraging, and concise. Use bullet points for lists. Keep responses focused and readable.`;
+
+  try{
+    // Get Firebase ID token to authenticate the Cloud Function call
+    let idToken='';
+    try{idToken=await currentUser.getIdToken();}catch(e){}
+
+    const res=await fetch(GEMINI_PROXY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken},
+      body:JSON.stringify({messages:aiHistory,systemPrompt})
+    });
+
+    removeAiTyping();
+
+    if(!res.ok){
+      const errData=await res.json().catch(()=>({}));
+      throw new Error(errData.error||`HTTP ${res.status}`);
+    }
+
+    const data=await res.json();
+    const reply=data.text||'Sorry, I could not generate a response.';
+    aiHistory.push({role:'assistant',content:reply});
+    appendAiMsg('bot',formatAiText(reply));
+
+    // Keep history to last 20 turns (40 messages) to avoid huge payloads
+    if(aiHistory.length>40)aiHistory=aiHistory.slice(-40);
+
+  }catch(err){
+    removeAiTyping();
+    let errMsg='⚠️ Could not reach AI. ';
+    if(err.message.includes('Failed to fetch')||err.message.includes('NetworkError')){
+      errMsg+='Check your internet connection or deploy the Cloud Function first.';
+    } else {
+      errMsg+=escAi(err.message);
+    }
+    appendAiMsg('bot',`<p style="color:var(--red)">${errMsg}</p>`);
+    console.error('AI Assistant error:',err);
+  }finally{
+    aiTyping=false;
+    document.getElementById('aiSendBtn').disabled=false;
+    document.getElementById('aiTa').focus();
+  }
+}
+
+function aiKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAiMessage();}
+}
+function aiResize(ta){ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,120)+'px';}
+function useAiChip(el){
+  const ta=document.getElementById('aiTa');
+  ta.value=el.textContent.replace(/^[^\s]+\s/,''); // strip the emoji
+  ta.focus();aiResize(ta);sendAiMessage();
+}
+function clearAiChat(){
+  aiHistory=[];
+  const area=document.getElementById('aiMsgsArea');
+  area.innerHTML=`<div class="ai-msg ai-msg-bot">
+    <div class="ai-msg-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+    <div class="ai-msg-bubble"><p>Chat cleared! How can I help you?</p></div>
+  </div>`;
+  document.getElementById('aiChipsBar').style.display='flex';
+}
 
 /* ═══════════════════════════════════════
    INDEXEDDB — stores PDFs locally forever
@@ -1687,7 +1906,7 @@ async function extractText(){
 async function detectChapters(){
   try{const ol=await pdfDoc.getOutline();if(ol?.length>=2){const r=await parseOutline(ol);if(r.length>=2){setBadge('outline','● Built-in');return r;}}}catch(e){}
   const toc=scanTOC();if(toc.length>=3){setBadge('outline','● TOC');return toc;}
-  if(GEMINI_KEY){try{const r=await aiDetect();if(r.length>=2){setBadge('ai','✦ AI');return r;}}catch(e){}}
+  try{const r=await aiDetect();if(r.length>=2){setBadge('ai','✦ AI');return r;}}catch(e){}
   const r=regexScan();setBadge('scan','○ Scan');return r;
 }
 async function parseOutline(ol){
@@ -1725,10 +1944,10 @@ function setBadge(type,label){
 }
 function renderChList(list){
   const el=document.getElementById('chScroll');
-  if(!list.length){el.innerHTML='<div class="no-ch">No chapters detected.<br/>Add API key for AI detection.</div>';return;}
+  if(!list.length){el.innerHTML='<div class="no-ch">No chapters detected.</div>';return;}
   el.innerHTML=list.map((ch,i)=>{
     const subs=(ch.children||[]).slice(0,5).map(s=>`<div class="ci-sub-item" onclick="event.stopPropagation();goPage(${s.page})"><span style="opacity:.35;font-size:.6rem">↳</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(s.title)}</span><span style="color:var(--txt3);margin-left:3px;font-size:.62rem">p.${s.page}</span></div>`).join('');
-    const synBtn=GEMINI_KEY?`<button class="syn-btn" id="synbtn${i}" onclick="event.stopPropagation();toggleSyn(${i})">✦ Synopsis</button>`:'';
+    const synBtn=`<button class="syn-btn" id="synbtn${i}" onclick="event.stopPropagation();toggleSyn(${i})">✦ Synopsis</button>`;
     return`<div class="ch-item" id="chi${i}" data-page="${ch.page}" onclick="goPage(${ch.page})"><span class="ci-num">${i+1}</span><div class="ci-body"><div class="ci-title" title="${esc(ch.title)}">${esc(ch.title)}</div><div class="ci-pg">Page ${ch.page}</div>${subs?`<div class="ci-sub">${subs}</div>`:''}${synBtn}</div></div><div class="syn-card" id="syncard${i}"><div class="syn-hd"><span class="syn-lbl">✦ Synopsis</span><button class="syn-x" onclick="closeSyn(${i})">×</button></div><div class="syn-txt" id="syntxt${i}"></div></div>`;
   }).join('');
 }
@@ -1824,7 +2043,6 @@ function chatResize(el){el.style.height='auto';el.style.height=Math.min(el.scrol
 function useChip(el){document.getElementById('chatTa').value=el.textContent;document.getElementById('chatChips').style.display='none';sendChat();}
 async function sendChat(){
   const ta=document.getElementById('chatTa');const txt=ta.value.trim();if(!txt)return;
-  if(!GEMINI_KEY){addMsg('a','⚠️ Add your Gemini API key — click "API Key" in the top bar.');return;}
   addMsg('u',txt);ta.value='';ta.style.height='auto';
   document.getElementById('chatSend').disabled=true;document.getElementById('chatChips').style.display='none';
   const tid='ty'+Date.now();addTyping(tid);
@@ -1853,12 +2071,12 @@ let toastTimer;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function friendlyErr(msg){
-  if(!msg||msg==='NO_KEY')return'No API key. Click "API Key" button.';
-  if(msg.includes('API_KEY_INVALID')||msg.includes('not valid'))return'Invalid API key.';
+  if(!msg)return'Something went wrong.';
   if(msg.includes('RATE_LIMIT')||msg.includes('429'))return'Rate limit — wait a moment.';
+  if(msg.includes('Failed to fetch')||msg.includes('NetworkError'))return'Could not reach AI server. Check your connection.';
   return msg;
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideApiModal();hideDelModal();closeBookDetailDirect();document.getElementById('offAddCard').style.display='none';document.getElementById('calSetupCard').style.display='none';}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideDelModal();closeBookDetailDirect();document.getElementById('offAddCard').style.display='none';document.getElementById('calSetupCard').style.display='none';}});
 
 /* ═══════════════════════════════════════
    CALENDAR FEATURE
